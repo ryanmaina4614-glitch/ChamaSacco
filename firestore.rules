@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for administrative rules
+    function isProjectOwner(request) {
+      return request.auth != null && (
+        request.auth.token.email == 'ryanmaina4614@gmail.com' ||
+        request.auth.token.email == 'ryanmaina4613@gmail.com'
+      );
+    }
+
+    // Connection validation test match
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+
+    // Chama Group Rules
+    match /groups/{groupId} {
+      // Allow read/write access for simulated chama actions, and project owner bypass
+      allow read, write: if true;
+
+      // Subcollection: Registered Members
+      match /members/{memberId} {
+        allow read, write: if true;
+      }
+
+      // Subcollection: Auditable Transactions
+      match /transactions/{transactionId} {
+        allow read, write: if true;
+      }
+
+      // Subcollection: Loan Governance applications
+      match /loans/{loanId} {
+        allow read, write: if true;
+      }
+
+      // Subcollection: SMS Carriers logs
+      match /smsMessages/{smsId} {
+        allow read, write: if true;
+      }
+
+      // Subcollection: Announcements & News Service
+      match /announcements/{announcementId} {
+        allow read, write: if true;
+      }
+
+      // Subcollection: Documents and Files
+      match /documents/{documentId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

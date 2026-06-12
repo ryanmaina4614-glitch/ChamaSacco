@@ -1,0 +1,6 @@
+{
+  "name": "Group Savings and Micro-credit Automation",
+  "description": "A collaborative table-banking, Chama, and group savings platform with integrated mobile money simulation, real-time automated ledgers, USSD menus, and automated group interest loan calculations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

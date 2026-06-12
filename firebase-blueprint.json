@@ -1,0 +1,161 @@
+{
+  "entities": {
+    "Group": {
+      "title": "Chama Group",
+      "description": "Holds Chama administrative rulebooks, configurations, and current simulation attributes",
+      "type": "object",
+      "properties": {
+        "groupName": { "type": "string", "description": "Name of the digital Chama self-help group" },
+        "registrationNumber": { "type": "string", "description": "Safaricom-registered reference code" },
+        "shareRate": { "type": "integer", "description": "Baseline cost of purchasing an equity share unit" },
+        "targetContribution": { "type": "integer", "description": "Monthly baseline savings target" },
+        "paybillNumber": { "type": "string", "description": "Paybill number for remote mobile-money entries" },
+        "vaultBalance": { "type": "integer", "description": "Currently pooled physical-digital chama cash reserves" },
+        "penaltyType": { "type": "string", "enum": ["flat_fine", "interest_hike", "both", "none"], "description": "Policy to apply for overdue loans" },
+        "flatMeetingFine": { "type": "integer", "description": "Cost applied for missing meeting sessions" },
+        "lateInterestHikePercentage": { "type": "integer", "description": "Excess rate charged per overdue cycle" },
+        "gracePeriodDays": { "type": "integer", "description": "Permissible days allowed before penalization" },
+        "currentSimDate": { "type": "string", "description": "Current date reference inside the time machine simulation" },
+        "activeMemberId": { "type": "string", "description": "Simulated member profiles target switcher" },
+        "maxMembersLimit": { "type": "integer", "description": "Maximum number of members allowed in this group" }
+      },
+      "required": ["groupName", "registrationNumber", "shareRate", "targetContribution", "paybillNumber", "vaultBalance", "penaltyType", "flatMeetingFine", "lateInterestHikePercentage", "gracePeriodDays", "currentSimDate", "activeMemberId"]
+    },
+    "Member": {
+      "title": "Chama Member Profile",
+      "description": "Member identification, holding accounts, and dynamic credit score records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique key matching members reference id" },
+        "name": { "type": "string", "description": "Full name of candidate member" },
+        "phone": { "type": "string", "description": "Kenyan format mobile number" },
+        "email": { "type": "string", "description": "Contact address" },
+        "nationalId": { "type": "string", "description": "Mandatory and unique Kenyan National Identity Card Number" },
+        "avatarColor": { "type": "string", "description": "Decorative brand accent hex color" },
+        "totalSavings": { "type": "integer", "description": "Total principal cash deposits stored" },
+        "shareBalance": { "type": "integer", "description": "Total active share purchase values" },
+        "activeLoans": { "type": "integer", "description": "Aggregate outstanding principal and penalty charges" },
+        "creditScore": { "type": "integer", "description": "Dynamic rating tracking reliability (300-850)" },
+        "joinedDate": { "type": "string", "description": "Calendar registry registration timestamp" },
+        "lastContributionDate": { "type": "string", "description": "Latest deposit contribution date" }
+      },
+      "required": ["id", "name", "phone", "email", "nationalId", "avatarColor", "totalSavings", "shareBalance", "activeLoans", "creditScore", "joinedDate"]
+    },
+    "SavingTransaction": {
+      "title": "Chama Saving Transaction Ledger",
+      "description": "Historical audit row of standard savings, share buying and loan repayment rows",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ledger transaction ID" },
+        "memberId": { "type": "string", "description": "Target member key" },
+        "memberName": { "type": "string", "description": "Cached member username" },
+        "amount": { "type": "integer", "description": "Amount deposited or repaid" },
+        "type": { "type": "string", "enum": ["savings", "shares", "repayment"], "description": "Transaction category classification" },
+        "paymentMethod": { "type": "string", "enum": ["mpesa", "bank_wallet"], "description": "Transaction payment protocol channel" },
+        "reference": { "type": "string", "description": "Safaricom reference trace code" },
+        "timestamp": { "type": "string", "description": "Simulation stamp date and time" },
+        "status": { "type": "string", "enum": ["completed", "pending", "failed"], "description": "Clearing state" },
+        "syncStatus": { "type": "string", "enum": ["firebase_synced", "local_only"], "description": "State tracking if synchronized online" }
+      },
+      "required": ["id", "memberId", "memberName", "amount", "type", "paymentMethod", "reference", "timestamp", "status"]
+    },
+    "Loan": {
+      "title": "Chama Loan Application Record",
+      "description": "Amortized micro-loan applications with multi-member approvals and security guarantors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique digital loan ID" },
+        "memberId": { "type": "string", "description": "Borrowing target candidate ID" },
+        "memberName": { "type": "string", "description": "Cached borrow profile username" },
+        "amountApplied": { "type": "integer", "description": "Original requested capital in Ksh" },
+        "principal": { "type": "integer", "description": "Current total repayable balance remaining" },
+        "interestRate": { "type": "integer", "description": "Monthly fee percentage applied" },
+        "durationMonths": { "type": "integer", "description": "Amortization period required" },
+        "interestType": { "type": "string", "enum": ["flat", "reducing"], "description": "Computation rules" },
+        "installmentTrack": { "type": "string", "enum": ["weekly", "bi-weekly", "monthly"], "description": "Repayment trigger interval" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "repaid", "overdue"], "description": "Dynamic repayment profile status" },
+        "dateApplied": { "type": "string", "description": "Simulation stamp date posted" },
+        "dateRepayBy": { "type": "string", "description": "Final target due date calculated" },
+        "purpose": { "type": "string", "description": "Socio-economic goal declaration statement" }
+      },
+      "required": ["id", "memberId", "memberName", "amountApplied", "principal", "interestRate", "durationMonths", "interestType", "installmentTrack", "status", "dateApplied", "dateRepayBy", "purpose"]
+    },
+    "SMSMessage": {
+      "title": "Safaricom Carrier SMS Notification Log",
+      "description": "Inbox text alerts transmitted during transactions and governance triggers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Message reference packet ID" },
+        "phone": { "type": "string", "description": "Target SIM recipient phone numbers" },
+        "sender": { "type": "string", "description": "Alphanumeric system sender code" },
+        "content": { "type": "string", "description": "Dynamic text content string" },
+        "timestamp": { "type": "string", "description": "Transmission simulation stamp date and time" },
+        "isRead": { "type": "boolean", "description": "Simple browser target visual indicator state" }
+      },
+      "required": ["id", "phone", "sender", "content", "timestamp", "isRead"]
+    },
+    "Announcement": {
+      "title": "Chama Announcement / News Service",
+      "description": "News and updates posted by committee members (text, images, files, videos)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "postedBy": { "type": "string" },
+        "role": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "videoUrl": { "type": "string" }
+      },
+      "required": ["id", "title", "content", "postedBy", "role", "timestamp"]
+    },
+    "DocumentFile": {
+      "title": "Chama Documents and Files Registry",
+      "description": "Auditable files repo including attachments forwarded from executive announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["image", "video", "pdf", "document", "other"] },
+        "uploadedBy": { "type": "string" },
+        "role": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "url": { "type": "string" },
+        "source": { "type": "string", "enum": ["direct", "announcement"] }
+      },
+      "required": ["id", "name", "type", "uploadedBy", "role", "timestamp", "url", "source"]
+    }
+  },
+  "firestore": {
+    "/groups/{groupId}": {
+      "schema": "Group",
+      "description": "Root Chama self-help group record"
+    },
+    "/groups/{groupId}/members/{memberId}": {
+      "schema": "Member",
+      "description": "Registered Chama member registry"
+    },
+    "/groups/{groupId}/transactions/{transactionId}": {
+      "schema": "SavingTransaction",
+      "description": "Ledger of savings, shares and repayments"
+    },
+    "/groups/{groupId}/loans/{loanId}": {
+      "schema": "Loan",
+      "description": "Micro-loans governance and status tracker"
+    },
+    "/groups/{groupId}/smsMessages/{smsId}": {
+      "schema": "SMSMessage",
+      "description": "Inbox messages log of simulated users"
+    },
+    "/groups/{groupId}/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "News and board circular posts from executive members"
+    },
+    "/groups/{groupId}/documents/{documentId}": {
+      "schema": "DocumentFile",
+      "description": "Consolidated files, meeting records, or announcement attachments"
+    }
+  }
+}
