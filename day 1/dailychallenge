@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Currency Converter</h1>
+
+    <input type="number" id="amount" placeholder="Enter amount">
+
+    <div class="currencies">
+        <div>
+            <label>From</label>
+            <select id="fromCurrency"></select>
+        </div>
+
+        <button id="switchBtn">⇄</button>
+
+        <div>
+            <label>To</label>
+            <select id="toCurrency"></select>
+        </div>
+    </div>
+
+    <button id="convertBtn">Convert</button>
+
+    <h2 id="result"></h2>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background:#f4f4f4;
+    font-family:Arial;
+}
+
+.container{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+    width:400px;
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-bottom:20px;
+}
+
+.currencies{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+select{
+    padding:10px;
+}
+
+button{
+    padding:10px 20px;
+    cursor:pointer;
+}
+
+#switchBtn{
+    margin-top:20px;
+}
+
+#result{
+    margin-top:20px;
+    color:green;
+}
+
+const apiKey = "YOUR_API_KEY";
+
+const fromCurrency = document.getElementById("fromCurrency");
+const toCurrency = document.getElementById("toCurrency");
+const amount = document.getElementById("amount");
+const result = document.getElementById("result");
+
+
+// Fetch supported currencies
+async function loadCurrencies() {
+    try {
+        const response = await fetch(
+            `https://v6.exchangerate-api.com/v6/${apiKey}/codes`
+        );
+
+        const data = await response.json();
+
+        data.supported_codes.forEach(currency => {
+            let option1 = document.createElement("option");
+            option1.value = currency[0];
+            option1.textContent = `${currency[0]} - ${currency[1]}`;
+
+            let option2 = option1.cloneNode(true);
+
+            fromCurrency.appendChild(option1);
+            toCurrency.appendChild(option2);
+        });
+
+        fromCurrency.value = "USD";
+        toCurrency.value = "EUR";
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+loadCurrencies();
+
+
+// Convert currency
+async function convertCurrency() {
+
+    const amountValue = amount.value;
+    const from = fromCurrency.value;
+    const to = toCurrency.value;
+
+    try {
+
+        const response = await fetch(
+            `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${from}/${to}/${amountValue}`
+        );
+
+        const data = await response.json();
+
+        result.textContent =
+            `${amountValue} ${from} = ${data.conversion_result} ${to}`;
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+document
+    .getElementById("convertBtn")
+    .addEventListener("click", convertCurrency);
+
+
+// Bonus: Switch currencies
+document
+    .getElementById("switchBtn")
+    .addEventListener("click", () => {
+
+        let temp = fromCurrency.value;
+        fromCurrency.value = toCurrency.value;
+        toCurrency.value = temp;
+
+        convertCurrency();
+    });
+
+    
