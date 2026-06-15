@@ -42,7 +42,12 @@ import {
   RefreshCw,
   Heart,
   ShieldAlert,
-  Receipt
+  Receipt,
+  Bell,
+  BellOff,
+  Sparkles,
+  BookOpen,
+  HelpCircle
 } from 'lucide-react';
 
 import { onSnapshot } from 'firebase/firestore';
@@ -143,7 +148,7 @@ export default function App() {
   const [events, setEvents] = useState<any[]>(() => {
     const saved = localStorage.getItem('chama_events');
     return saved ? JSON.parse(saved) : [
-      { id: 'evt_1', title: "Monthly Contribution Cycle Review", date: "2026-06-15", time: "14:00", location: "Upendo Unity Hall & Zoom", description: "Standard cycle table banking rotation round" },
+      { id: 'evt_1', title: "Monthly Contribution Cycle Review", date: "2026-06-15", time: "14:00", location: "Biashara Boost HQ & Zoom", description: "Standard cycle table banking rotation round" },
       { id: 'evt_2', title: "Bi-Weekly Executive Board Assessment", date: "2026-06-18", time: "18:30", location: "Board Room Room 4B", description: "Consensus loan review for pending applications" }
     ];
   });
@@ -175,6 +180,165 @@ export default function App() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [showSimulation, setShowSimulation] = useState<boolean>(false);
+
+  // Guided Onboarding Tour State
+  const [isTourActive, setIsTourActive] = useState<boolean>(() => {
+    const completed = localStorage.getItem('chama_tour_completed_v2');
+    return completed !== 'true';
+  });
+  const [tourStep, setTourStep] = useState<number>(0);
+
+  const tourSteps = [
+    {
+      title: "Welcome to Biashara Boost!",
+      icon: "rocket",
+      description: "Welcome! This is an intelligent, high-fidelity digitized multi-party microfinance consensus ledger. Let's take a 30-second tour to discover key features designed for table banking and credit governance.",
+    },
+    {
+      title: "Interactive Contribution Dashboard",
+      icon: "chart",
+      description: "Here you can monitor accrued savings versus active credit allocations. Pro-tip: Select different months in the chart visualization below to update the transaction breakdown panel on demand!",
+    },
+    {
+      title: "Interactive Handset USSD Simulator",
+      icon: "phone",
+      description: "Dial Safaricom networks to process transactions offline! Test standard USSD operations (*384#) like registering members, saving capital, and issuing emergency credit lines directly from the cellular simulation screen.",
+    },
+    {
+      title: "M-PESA & Micro-transaction Controls",
+      icon: "coins",
+      description: "Utilize real-time billing tools in the tables below to process digital contributions. This generates automated confirmation SMS texts and updates credit rankings instantly.",
+    },
+    {
+      title: "Immutable Cloud Sync",
+      icon: "cloud",
+      description: "Test decoupled, offline resilience! Toggle your connection State to 'Offline', make simulated M-PESA payments, and then click 'Sync' to write all local ledger queue updates back to your Cloud Run Firebase dataset.",
+    }
+  ];
+
+  const handleStartTour = () => {
+    setTourStep(0);
+    setIsTourActive(true);
+  };
+
+  useEffect(() => {
+    if (isTourActive) {
+      if (tourStep === 1) {
+        setActiveTab('dashboard');
+      } else if (tourStep === 2) {
+        setShowSimulation(true);
+      }
+    }
+  }, [tourStep, isTourActive]);
+
+  // NOTIFICATION UTILITIES
+  const [toasts, setToasts] = useState<{ id: string; title: string; message: string; type: 'success' | 'info' | 'warning' }[]>([]);
+  const [notificationPermission, setNotificationPermission] = useState<string>(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return Notification.permission;
+    }
+    return 'default';
+  });
+
+  const triggerAlert = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+    // Play dual frequency pleasant chime using Web Audio API
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.frequency.setValueAtTime(587.33, now); // D5
+      gain1.gain.setValueAtTime(0.08, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.frequency.setValueAtTime(783.99, now + 0.07); // G5
+      gain2.gain.setValueAtTime(0.08, now + 0.07);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+      osc2.start(now + 0.07);
+      osc2.stop(now + 0.42);
+    } catch (e) {
+      console.log('Audio Blocked', e);
+    }
+
+    // Try HTML5 Native Notification if enabled & supported
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, { body: message });
+      } catch (err) {
+        console.warn('Sandbox block for native notification', err);
+      }
+    }
+
+    // Display high-fidelity local Toaster
+    const id = 'toast_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+    setToasts(prev => [...prev, { id, title, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4500);
+  };
+
+  const requestNotificationPermission = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const result = await Notification.requestPermission();
+        setNotificationPermission(result);
+        if (result === 'granted') {
+          triggerAlert("System Notifications Enabled", "You will now receive desktop push alerts in addition to simulated phone carrier SMS alerts!", "success");
+        } else {
+          alert("Notification permission denied. We will fallback gracefully to in-app notification toasts.");
+        }
+      } catch (err) {
+        console.warn('Permission query blocked inside iframe sandbox:', err);
+        alert("Notification request failed or blocked by iframe environment controls. We've enabled beautiful in-app toast overlays instead!");
+      }
+    } else {
+      alert("This browser does not support experimental desktop notifications. Using native in-app alerts instead.");
+    }
+  };
+
+  // Automated watchers for unified real-time indicators
+  const prevSmsLengthRef = React.useRef(smsMessages.length);
+  useEffect(() => {
+    if (smsMessages.length > prevSmsLengthRef.current) {
+      const latestSms = smsMessages[0];
+      if (latestSms) {
+        triggerAlert(latestSms.sender, latestSms.content, 'info');
+      }
+    }
+    prevSmsLengthRef.current = smsMessages.length;
+  }, [smsMessages]);
+
+  const prevTxLengthRef = React.useRef(transactions.length);
+  useEffect(() => {
+    if (transactions.length > prevTxLengthRef.current) {
+      const latestTx = transactions[0];
+      if (latestTx) {
+        const typeStr = latestTx.type === 'savings' ? 'Savings' : latestTx.type === 'shares' ? 'Share Purchase' : 'Repayment/Sweep';
+        triggerAlert("Ledger Updated", `${latestTx.memberName || 'System'} completed a ${typeStr} of Ksh ${latestTx.amount.toLocaleString()}. Ref: ${latestTx.reference}`, 'success');
+      }
+    }
+    prevTxLengthRef.current = transactions.length;
+  }, [transactions]);
+
+  const prevLoansRef = React.useRef(loans.length);
+  useEffect(() => {
+    if (loans.length > prevLoansRef.current) {
+      const latestLoan = loans[0];
+      if (latestLoan) {
+        triggerAlert("Credit Application Open", `${latestLoan.memberName} requested microcredit: Ksh ${(latestLoan.principal || latestLoan.amountApplied || 0).toLocaleString()}`, 'warning');
+      }
+    }
+    prevLoansRef.current = loans.length;
+  }, [loans]);
 
   // Load state on mount / setup Firebase seeding
   useEffect(() => {
@@ -582,8 +746,8 @@ export default function App() {
     const confirmationSMS: SMSMessage = {
       id: 'sms_' + Date.now().toString().slice(-6),
       phone: targetMember.phone,
-      sender: "UPENDO_CM",
-      content: `M-PESA Confirmed. Ksh ${transaction.amount.toLocaleString()} credited to your Upendo ${typeLabel} account. Total: Ksh ${totalLabel.toLocaleString()}. Ref: ${randomRef}.`,
+      sender: "BOOST_CM",
+      content: `M-PESA Confirmed. Ksh ${transaction.amount.toLocaleString()} credited to your Biashara Boost ${typeLabel} account. Total: Ksh ${totalLabel.toLocaleString()}. Ref: ${randomRef}.`,
       timestamp,
       isRead: false
     };
@@ -640,8 +804,8 @@ export default function App() {
     const notifySMS: SMSMessage = {
       id: 'sms_alert_' + Date.now().toString().slice(-6),
       phone: currentMember.phone,
-      sender: "UPENDO_CM",
-      content: `Upendo Security Alert: Your loan request of Ksh ${amount.toLocaleString()} was successfully recorded. Awaiting executive signature consensus before disbursement.`,
+      sender: "BOOST_CM",
+      content: `Biashara Boost Security Alert: Your loan request of Ksh ${amount.toLocaleString()} was successfully recorded. Awaiting executive signature consensus before disbursement.`,
       timestamp: currentSimDate + " 12:00:00",
       isRead: false
     };
@@ -953,8 +1117,8 @@ export default function App() {
     const repaymentSMS: SMSMessage = {
       id: 'sms_repay_confirm_' + Date.now().toString().slice(-6),
       phone: borrower.phone,
-      sender: "UPENDO_CM",
-      content: `M-PESA Confirmed. Upendo paid Ksh ${amount.toLocaleString()} for Loan Repayment. Securely logged to automated ledger. Your credit score increased +15.`,
+      sender: "BOOST_CM",
+      content: `M-PESA Confirmed. Biashara Boost received Ksh ${amount.toLocaleString()} for Loan Repayment. Securely logged to automated ledger. Your credit score increased +15.`,
       timestamp,
       isRead: false
     };
@@ -1055,8 +1219,8 @@ export default function App() {
           const alertArrearsSMS: SMSMessage = {
             id: 'sms_overdue_' + Date.now().toString().slice(-6) + '_' + Math.random().toString(36).substring(2, 5),
             phone: borrower.phone,
-            sender: "UPENDO_CM",
-            content: `URGENT WARNING: Your Upendo Microloan of Ksh ${l.principal.toLocaleString()} is overdue (Grace Period of ${groupConfig.gracePeriodDays} days exceeded). Penalty: Ksh ${totalPenaltyFee.toLocaleString()} applied. Credit score fell to ${Math.max(300, borrower.creditScore - 60)}.`,
+            sender: "BOOST_CM",
+            content: `URGENT WARNING: Your Biashara Boost Microloan of Ksh ${l.principal.toLocaleString()} is overdue (Grace Period of ${groupConfig.gracePeriodDays} days exceeded). Penalty: Ksh ${totalPenaltyFee.toLocaleString()} applied. Credit score fell to ${Math.max(300, borrower.creditScore - 60)}.`,
             timestamp: nextDate + " 08:05:00",
             isRead: false
           };
@@ -1179,6 +1343,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Guided Tour Onboarding button */}
+            <button
+              onClick={handleStartTour}
+              className="flex items-center gap-1 text-[10px] px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/45 text-indigo-750 dark:text-indigo-350 border border-indigo-200 dark:border-indigo-900 rounded-lg transition font-bold select-none cursor-pointer"
+              title="Launch Getting Started Platform Walkthrough"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+              <span>Walkthrough Onboarding</span>
+            </button>
+
             {/* Sandbox Mode Toggle Button */}
             <button
               onClick={() => setShowSimulation(!showSimulation)}
@@ -1221,6 +1395,23 @@ export default function App() {
             >
               <CloudLightning className="w-3.5 h-3.5 shrink-0" />
               <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
+            </button>
+
+            {/* Live Notifications Permission Toggle */}
+            <button
+              onClick={requestNotificationPermission}
+              className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${
+                notificationPermission === 'granted'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                  : 'bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-800 hover:bg-slate-100'
+              }`}
+              title={`Desktop Push & Sound Alerts: ${notificationPermission === 'granted' ? 'Enabled' : 'Disabled (Click to request)'}`}
+            >
+              {notificationPermission === 'granted' ? (
+                <Bell className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+              ) : (
+                <BellOff className="w-3.5 h-3.5" />
+              )}
             </button>
 
             {/* Global theme toggle */}
@@ -2253,13 +2444,142 @@ export default function App() {
       {/* Footer Branding Area */}
       <footer className="border-t border-slate-200/60 bg-white/70 py-6 text-center text-[11px] text-slate-500 relative">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="font-medium">© 2026 Upendo Unity Systems • Secure Digitized Multi-Party consensus automation ledger.</p>
+          <p className="font-medium">© 2026 Biashara Boost Systems • Secure Digitized Multi-Party consensus automation ledger.</p>
           <div className="flex gap-4 font-mono font-bold">
             <span className="text-emerald-600">● Microfinance Chama V4.2</span>
             <span>Made for table banking and rotations</span>
           </div>
         </div>
       </footer>
+
+      {/* Dynamic Toast Notifications Portal */}
+      <div className="fixed top-20 right-4 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-lg bg-white dark:bg-zinc-950 transition duration-300 ${
+              toast.type === 'success'
+                ? 'border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20'
+                : toast.type === 'warning'
+                ? 'border-amber-200 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20'
+                : 'border-indigo-200 bg-indigo-50/40 dark:border-indigo-900/40 dark:bg-indigo-950/20'
+            }`}
+          >
+            <div className={`p-1.5 rounded-lg shrink-0 text-white flex items-center justify-center ${
+              toast.type === 'success' ? 'bg-emerald-500' : toast.type === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'
+            }`}>
+              <Bell className="w-3.5 h-3.5" />
+            </div>
+            <div className="text-left font-sans min-w-0 flex-1">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100">{toast.title}</h4>
+              <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-1 leading-normal font-medium">{toast.message}</p>
+            </div>
+            <button
+              onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-350 flex items-center justify-center p-0.5 font-bold cursor-pointer text-sm leading-none"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Onboarding Tour Overlay Component */}
+      {isTourActive && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs transition">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden text-left relative">
+            
+            {/* Elegant Header Accent */}
+            <div className="bg-gradient-to-r from-emerald-600 to-indigo-600 h-2 w-full" />
+            
+            <div className="p-6 space-y-4">
+              {/* Step indicator & icons */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider font-bold font-mono text-indigo-600 dark:text-indigo-400">
+                  Step {tourStep + 1} of {tourSteps.length}
+                </span>
+                <span className="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-2 py-0.5 rounded font-mono font-bold">
+                  Guided Tour
+                </span>
+              </div>
+
+              {/* Title & Icons dynamically mapped */}
+              <div className="flex gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shrink-0 flex items-center justify-center">
+                  {tourSteps[tourStep]?.icon === 'rocket' && <Sparkles className="w-5 h-5 animate-bounce text-indigo-600 dark:text-indigo-450" />}
+                  {tourSteps[tourStep]?.icon === 'chart' && <LayoutDashboard className="w-5 h-5 text-indigo-600 dark:text-indigo-450" />}
+                  {tourSteps[tourStep]?.icon === 'phone' && <Smartphone className="w-5 h-5 animate-pulse text-indigo-600 dark:text-indigo-450" />}
+                  {tourSteps[tourStep]?.icon === 'coins' && <Coins className="w-5 h-5 text-indigo-600 dark:text-indigo-450" />}
+                  {tourSteps[tourStep]?.icon === 'cloud' && <CloudLightning className="w-5 h-5 text-amber-505 shrink-0" />}
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-950 dark:text-white leading-snug">
+                    {tourSteps[tourStep]?.title}
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 mt-2 leading-relaxed">
+                    {tourSteps[tourStep]?.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Context Action Highlights if we are at certain or specific steps to guide visually */}
+              {tourStep === 1 && (
+                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-150 dark:border-emerald-900/30 p-2.5 rounded-lg text-[10px] text-emerald-800 dark:text-emerald-450 font-medium leading-normal">
+                  💡 <strong>Try this:</strong> Click dynamic monthly bars in the chart below to update the transaction side-panel on the fly!
+                </div>
+              )}
+              {tourStep === 2 && (
+                <div className="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-150 dark:border-indigo-900/30 p-2.5 rounded-lg text-[10px] text-indigo-800 dark:text-indigo-450 font-medium leading-normal">
+                  📱 <strong>Mobile Simulator Pane:</strong> The active handset displays compliant Safaricom USSD menus. Dial <strong>*384#</strong> to test savings & loan operations.
+                </div>
+              )}
+
+              {/* Steps control footer */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTourActive(false);
+                    localStorage.setItem('chama_tour_completed_v2', 'true');
+                  }}
+                  className="text-[10px] text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-350 font-bold uppercase tracking-wider cursor-pointer py-1 px-2 hover:bg-slate-50 dark:hover:bg-zinc-800 rounded transition"
+                >
+                  Skip
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {tourStep > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setTourStep(prev => prev - 1)}
+                      className="text-xs font-bold border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 rounded-lg px-2.5 py-1 transition cursor-pointer hover:bg-slate-100"
+                    >
+                      Back
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (tourStep < tourSteps.length - 1) {
+                        setTourStep(prev => prev + 1);
+                      } else {
+                        setIsTourActive(false);
+                        localStorage.setItem('chama_tour_completed_v2', 'true');
+                        triggerAlert("Tour Completed!", "Welcome to Biashara Boost. Take control of your community capital with high underwriting safety!", "success");
+                      }
+                    }}
+                    className="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3.5 py-1.5 transition cursor-pointer shadow-sm shadow-indigo-600/15"
+                  >
+                    {tourStep === tourSteps.length - 1 ? 'Finish' : 'Next'}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

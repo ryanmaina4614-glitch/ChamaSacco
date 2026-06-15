@@ -393,8 +393,8 @@ export default function LandingAndAuth({ isOnline, onSelectGroup }: LandingAndAu
           backgroundImage: `url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80')` 
         }}
       />
-      {/* Frosted White Transparency overlays */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-white/95 via-white/85 to-slate-50/90 backdrop-blur-[3px]" />
+      {/* Frosted White Transparency overlays with enhanced visibility for the solidarity hand high-five background photo */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-white/50 via-white/35 to-slate-100/30 backdrop-blur-[0.5px]" />
 
       {/* 1. BRAND HEADER */}
       <header className="border-b border-slate-200/60 bg-white/75 backdrop-blur sticky top-0 z-50 py-4 shadow-sm relative">

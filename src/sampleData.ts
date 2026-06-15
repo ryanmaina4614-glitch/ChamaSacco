@@ -1,17 +1,17 @@
 import { Member, SavingTransaction, Loan, SMSMessage, GroupConfig } from './types';
 
 export const INITIAL_GROUP_CONFIG: GroupConfig = {
-  groupName: "Upendo Unity Chama",
-  registrationNumber: "SHG/2024/7742",
+  groupName: "Biashara Boost",
+  registrationNumber: "SHG/2026/7742",
   shareRate: 500, // 500 Ksh per share
   targetContribution: 1000, // 1000 Ksh monthly savings rate
-  paybillNumber: "882882", // Upendo Paybill account
+  paybillNumber: "882882", // Biashara Boost Paybill account
   vaultBalance: 84500, // Current cash pooled inside the physical-digital Chama vault
   penaltyType: "both",
   flatMeetingFine: 200,
   lateInterestHikePercentage: 2,
   gracePeriodDays: 5,
-  description: "Upendo Unity is a community-driven self-help group focusing on progressive table-banking, micro-loans, and mutual growth.",
+  description: "Biashara Boost is a community-driven self-help group focusing on progressive table-banking, micro-loans, and mutual growth.",
   maxMembersLimit: 4, // Initial capacity capped at 4 members to demonstrate "full" state immediately
 };
 
@@ -20,7 +20,7 @@ export const INITIAL_MEMBERS: Member[] = [
     id: "mem_1",
     name: "Linet Atieno",
     phone: "0711223344",
-    email: "linet.atieno@upendochama.org",
+    email: "linet.atieno@biasharaboost.org",
     nationalId: "31829038",
     avatarColor: "bg-emerald-600",
     totalSavings: 28500,
@@ -36,7 +36,7 @@ export const INITIAL_MEMBERS: Member[] = [
     id: "mem_2",
     name: "David Kamau",
     phone: "0722334455",
-    email: "david.kamau@upendochama.org",
+    email: "david.kamau@biasharaboost.org",
     nationalId: "28491029",
     avatarColor: "bg-blue-600",
     totalSavings: 35000,
@@ -52,7 +52,7 @@ export const INITIAL_MEMBERS: Member[] = [
     id: "mem_3",
     name: "Grace Mwangi",
     phone: "0733445566",
-    email: "grace.mwangi@upendochama.org",
+    email: "grace.mwangi@biasharaboost.org",
     nationalId: "34829103",
     avatarColor: "bg-indigo-600",
     totalSavings: 18000,
@@ -68,7 +68,7 @@ export const INITIAL_MEMBERS: Member[] = [
     id: "mem_4",
     name: "Ezra Korir",
     phone: "0744556677",
-    email: "ezra.korir@upendochama.org",
+    email: "ezra.korir@biasharaboost.org",
     nationalId: "29482038",
     avatarColor: "bg-amber-600",
     totalSavings: 11000,
@@ -202,15 +202,15 @@ export const INITIAL_SMS: SMSMessage[] = [
   {
     id: "sms_1",
     phone: "0711223344",
-    sender: "UPENDO_CM",
-    content: "M-PESA Confirmed. Received Ksh 1,000 for Savings in Upendo Unity Chama. Your cumulative savings is Ksh 28,500. Reference: MPESA_TXF4109K.",
+    sender: "BOOST_CM",
+    content: "M-PESA Confirmed. Received Ksh 1,000 for Savings in Biashara Boost. Your cumulative savings is Ksh 28,500. Reference: MPESA_TXF4109K.",
     timestamp: "2026-05-15 09:15:00",
     isRead: false
   },
   {
     id: "sms_2",
     phone: "0711223344",
-    sender: "UPENDO_CM",
+    sender: "BOOST_CM",
     content: "REMINDER: Your microloan repayment of Ksh 4,200 is due on 2026-06-01. Please make prompt repayment to maintain your premium 810 credit rating.",
     timestamp: "2026-05-25 08:30:00",
     isRead: false

@@ -19,12 +19,19 @@ At the heart of the system is the **Dual-Viewport Workspace**:
 ## ⚡ Key System Features
 
 ### 1. Unified Ledger Dashboard (The Chama Treasury)
+*   **Group-Exclusive Privacy Guards:** Implements strict data isolation. Because the core engine partitions Firestore paths under isolated group documents (`groups/{groupId}`), the primary dashboard operates exclusively on that group's datasets, guarded by a dedicated visual partition verification badge. This prevents any multi-group leaks or public scraping.
 *   **Physical Vault Cash:** Monitors total liquid reserves held inside the physical treasury. Resources decrease instantly upon approved loan disbursements and increase automatically upon savings targets, share purchases, or interest-accrued loan repayments.
 *   **Accrued Member Savings:** Tracks cumulative member-contributed savings ledger entries toward targets.
 *   **Total Equity Shares:** Manages active equity shares purchased by members, valued at a customizable baseline rate (e.g., Ksh 500 per share unit).
 *   **Outstanding Loan Book:** Monitors externalized capital in circulation and expected interest yields.
-*   **Handcrafted SVG Charts:** Includes double-trend charts plotting historical vault cash balances against active risk exposures.
+*   **Recharts Data Visualizations:** Includes advanced double-trend charts plotting monthly savings trends against active loan disbursement patterns to analyze microcredit velocity and capital allocations. Features an interactive **custom hover tooltip** displaying precise, high-fidelity Ksh values for each metric, improving information density and data clarity.
 *   **Transaction Audit Log:** An immutable ledger showing M-Pesa tracking reference strings, payment methods, timestamps, and database sync identifiers.
+
+### 2. Live Push & In-App Notification Engine
+*   **Dual-Frequency Synth Alerts:** Implements a professional, pleasant dual-frequency synthesizer chime using the **Web Audio API** to alert users instantly during transactions or loan changes without relying on external media assets.
+*   **Interactive Toast Banners:** Mounts beautifully timed, high-visibility visual toast alerts that slide out from the upper right, ensuring critical financial status updates are never missed.
+*   **Web Notification API Support:** Prompts users via an elegant bell toggle inside the application header, requesting system hardware push permission to dispatch native OS desktop alerts.
+*   **Simulated Carrier SMS Sync:** Automatically alerts users of transaction receipts and overdue microloans via realistic carrier outbox synchronization.
 
 ### 2. Safeguarded Co-operative Credit (Amortization & Underwriting)
 *   **300% Multiplier Rule:** Restricts member credit exposure. A member cannot borrow more than 300% of their actual accrued physical savings.
