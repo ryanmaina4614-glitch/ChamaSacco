@@ -1,17 +1,6 @@
-# ChamaSacco - Group Savings & Micro-credit Automation
+# Biashara Boost - Group Savings & Micro-credit Automation
 
-```
- ██╗   ██╗██████╗ ███████╗███╗   ██╗██████╗  ██████╗      ██╗   ██╗███╗   ██╗██╗████████╗██╗   ██╗
- ██║   ██║██╔══██╗██╔════╝████╗  ██║██╔══██╗██╔═══██╗     ██║   ██║████╗  ██║██║╚══██╔══╝╚██╗ ██╔╝
- ██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║  ██║██║   ██║     ██║   ██║██╔██╗ ██║██║   ██║    ╚████╔╝ 
- ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║  ██║██║   ██║     ██║   ██║██║╚██╗██║██║   ██║     ╚██╔╝  
- ╚██████╔╝██║     ███████╗██║ ╚████║██████╔╝╚██████╔╝     ╚██████╔╝██║ ╚████║██║   ██║      ██║   
-  ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═════╝  ╚═════╝       ╚═════╝ ╚═╝  ╚═══╝╚═╝   ╚═╝      ╚═╝   
-                                                                                                
-                🌿 CHAMA LEDGER, TABLE BANKING & SACCO GOVERNANCE SANDBOX 🌿
-```
-
-Welcome to the **ChamaSacco Group Savings and Micro-credit Automation** platform. This system is a high-fidelity, full-stack table-banking simulation workspace designed specifically for unbanked and informal financial self-help groups (known as Chamas or Saccos in East Africa). 
+Welcome to the **Biashara Boost Group Savings and Micro-credit Automation** platform. This system is a high-fidelity, full-stack table-banking simulation workspace designed specifically for unbanked and informal financial self-help groups (known as Chamas or Saccos in East Africa). 
 
 By replacing vulnerable physical paper notebooks and locked cash boxes with **immutable digital double-entry ledgers**, the platform eliminates human math errors, prevents capital leakage, and institutes rigorous multi-authority security standards—even while operating within simple, accessible localized paradigms.
 
@@ -226,7 +215,7 @@ Get started testing this sandboxed ecosystem with three illustrative exercises:
 3.  Fill in the onboarding form:
     *   *Full Name:* `Flora Mwende`
     *   *Phone Number:* `0712398456`
-    *   *Email Profile:* `flora.mwende@chamasacco.org`
+    *   *Email Profile:* `flora.mwende@biasharaboost.org`
     *   *National National ID:* `29401822` (Mandated identifier)
 4.  Submit the form. Flora joins the Sacco and is instantly selected as the **Active SIM SIM Profile** inside the cellphone interactive console on the right side.
 5.  On the cellphone simulator, choose **M-Pesa Sim** -> **Buy Equity Shares**.
@@ -261,5 +250,5 @@ Get started testing this sandboxed ecosystem with three illustrative exercises:
 ---
 
 ```
-   MADE WITH HEART & PRISTINE CRAFTSMANSHIP FOR SACCO LEDGER ACCURACY 🌸 CHAMASACCO
+   MADE WITH HEART & PRISTINE CRAFTSMANSHIP FOR SACCO LEDGER ACCURACY 🌸 BIASHARA BOOST
 ```

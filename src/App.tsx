@@ -13,6 +13,8 @@ import MemberSection from './components/MemberSection';
 import LoanGovernance from './components/LoanGovernance';
 import PhoneSimulator from './components/PhoneSimulator';
 import LandingAndAuth from './components/LandingAndAuth';
+import RoscaManager from './components/RoscaManager';
+import ChamaPillars from './components/ChamaPillars';
 
 import { 
   ShieldCheck, 
@@ -36,7 +38,11 @@ import {
   Menu,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  RefreshCw,
+  Heart,
+  ShieldAlert,
+  Receipt
 } from 'lucide-react';
 
 import { onSnapshot } from 'firebase/firestore';
@@ -80,6 +86,47 @@ export default function App() {
   const [smsMessages, setSmsMessages] = useState<SMSMessage[]>(INITIAL_SMS);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [documents, setDocuments] = useState<DocumentFile[]>([]);
+
+  // Persistent pillars state configurations
+  const [selectedGroupModel, setSelectedGroupModel] = useState<'ASCA' | 'ROSCA' | 'Hybrid'>(() => {
+    return (localStorage.getItem('chama_sub_group_model') as 'ASCA' | 'ROSCA' | 'Hybrid') || 'ASCA';
+  });
+  useEffect(() => {
+    localStorage.setItem('chama_sub_group_model', selectedGroupModel);
+  }, [selectedGroupModel]);
+
+  const [welfareBalance, setWelfareBalance] = useState<number>(() => {
+    const saved = localStorage.getItem('chama_welfare_balance');
+    return saved ? Number(saved) : 14500;
+  });
+  useEffect(() => {
+    localStorage.setItem('chama_welfare_balance', welfareBalance.toString());
+  }, [welfareBalance]);
+
+  const [roscaCurrentCycle, setRoscaCurrentCycle] = useState<number>(() => {
+    const saved = localStorage.getItem('chama_rosca_cycle');
+    return saved ? Number(saved) : 0;
+  });
+  useEffect(() => {
+    localStorage.setItem('chama_rosca_cycle', roscaCurrentCycle.toString());
+  }, [roscaCurrentCycle]);
+
+  const [bankLinkage, setBankLinkage] = useState<any>(() => {
+    const saved = localStorage.getItem('chama_bank_linkage');
+    return saved ? JSON.parse(saved) : {
+      institution: "Co-operative Bank of Kenya Ltd",
+      accountNumber: "01120092828300",
+      branch: "Haile Selassie Avenue Branch",
+      linked: true,
+      interestAccruing: true,
+      interestYield: "6.5% p.a.",
+      excessThreshold: 20000, 
+      escrowSafetyRating: "Bank-Grade (99.9% Secured via Trust Account Escrow)"
+    };
+  });
+  useEffect(() => {
+    localStorage.setItem('chama_bank_linkage', JSON.stringify(bankLinkage));
+  }, [bankLinkage]);
 
   const [investments, setInvestments] = useState<any[]>(() => {
     const saved = localStorage.getItem('chama_investments');
@@ -1256,6 +1303,7 @@ export default function App() {
               <p className="text-[9px] font-mono font-extrabold text-slate-400 tracking-wider">FUNDS & ROTATION</p>
               <nav className="mt-2 space-y-1">
                 {[
+                  { id: 'rosca', label: 'Merry-Go-Round (ROSCA)', icon: RefreshCw },
                   { id: 'investments', label: 'Group Investments', icon: TrendingUp },
                   { id: 'calendar', label: 'Events and Calendar', icon: Calendar },
                   { id: 'communications', label: 'SMS & Communications', icon: MessageSquare },
@@ -1418,38 +1466,249 @@ export default function App() {
                 />
               )}
 
-              {/* A. BANK MANAGEMENT MOCK VIEW */}
+              {/* A. BANK MANAGEMENT INTEGRATION VIEW */}
               {activeTab === 'bank' && (
-                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-xs space-y-6">
-                  <div>
-                    <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                      <Building2 className="w-5 h-5 text-emerald-600" />
-                      Commercial Banking Integration
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Link ChamaSacco ledgers to commercial commercial banks or trust holding systems to escrow collective funds.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="border border-slate-150 p-4 rounded-xl space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-500 uppercase font-mono font-bold">Primary Escrow Account</span>
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[8px] font-mono font-bold">CONNECTED</span>
-                      </div>
-                      <p className="text-xs font-extrabold text-slate-800">Co-operative Bank of Kenya Ltd</p>
-                      <p className="text-lg font-mono font-extrabold text-slate-900">Ksh {groupConfig.vaultBalance.toLocaleString()}</p>
-                      <p className="text-[10px] text-slate-400 font-mono">Account : 01120092828300 • Branch : Haile Selassie</p>
+                <div className="space-y-6">
+                  {/* Headline */}
+                  <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-xs space-y-6 text-left">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-emerald-600" />
+                        Commercial Banking & Escrow Custody Linkage
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Link Biashara Boost ledgers to commercial banking institutions to escrow collective funds and generate fixed yields.
+                      </p>
                     </div>
 
-                    <div className="border border-slate-150 p-4 rounded-xl space-y-2 bg-slate-50/50">
-                      <span className="text-xs text-slate-500 uppercase font-mono font-bold">Automatic Settlement</span>
-                      <p className="text-xs font-semibold text-slate-705 leading-normal">
-                        Every transaction is audited via secure multi-party signatures. Capital reserves reside safely within verified trust accounts with real-time liquidity reporting.
-                      </p>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      
+                      {/* Interactive Sweep Card */}
+                      <div className="lg:col-span-2 border border-slate-150 p-5 rounded-2xl space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-400 font-mono">ESCROW MANAGEMENT ENGINE</span>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border ${
+                            bankLinkage.linked 
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                              : 'bg-rose-50 text-rose-800 border-rose-200'
+                          }`}>
+                            {bankLinkage.linked ? 'CONNECTED' : 'DISCONNECTED'}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                            <span className="text-[9px] uppercase font-mono font-bold text-slate-405">Cooperative Custodian Bank</span>
+                            <p className="text-sm font-extrabold text-slate-800">{bankLinkage.institution}</p>
+                            <p className="text-[10px] font-mono text-slate-500">{bankLinkage.branch}</p>
+                            <span className="font-mono text-xs select-all text-indigo-700 font-bold block pt-1.5">{bankLinkage.accountNumber}</span>
+                          </div>
+
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                            <span className="text-[9px] uppercase font-mono font-bold text-slate-405">Auto-Reflected Vault</span>
+                            <p className="text-lg font-mono font-extrabold text-emerald-600">Ksh {groupConfig.vaultBalance.toLocaleString()}</p>
+                            <span className="inline-block text-[10px] font-bold text-emerald-605">✓ 100% Synced via Escrow Partner</span>
+                          </div>
+                        </div>
+
+                        {/* Automatic Interbank Sweep Controls */}
+                        <div className="pt-4 border-t border-slate-100 space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-800">Automatic Sweep-to-Custody (6.5% yield)</h4>
+                              <p className="text-[10px] text-slate-500 mt-0.5">Sweep excess member funds from M-Pesa to prevent high digital liability risks.</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400">STATUS:</span>
+                              <button
+                                onClick={() => setBankLinkage(prev => ({ ...prev, interestAccruing: !prev.interestAccruing }))}
+                                className={`px-2.5 py-1 text-[9px] font-mono uppercase font-extrabold rounded border cursor-pointer ${
+                                  bankLinkage.interestAccruing 
+                                    ? 'bg-indigo-600 text-white border-indigo-700' 
+                                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                                }`}
+                              >
+                                {bankLinkage.interestAccruing ? 'Sweep Active ✓' : 'Inactive'}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[10px] text-slate-500 uppercase tracking-widest font-extrabold mb-1">
+                                Lock threshold (Ksh)
+                              </label>
+                              <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-slate-400 text-xs font-mono font-bold">Ksh</span>
+                                <input
+                                  type="number"
+                                  value={bankLinkage.excessThreshold}
+                                  onChange={(e) => setBankLinkage(prev => ({ ...prev, excessThreshold: Math.max(1000, Number(e.target.value)) }))}
+                                  className="w-full bg-slate-50 border border-slate-200 pl-10 pr-3 py-2 text-xs text-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 font-mono font-bold"
+                                />
+                              </div>
+                              <span className="text-[9px] text-slate-400 mt-1 block">Sweep any funds collected exceeding this amount</span>
+                            </div>
+
+                            <div className="flex flex-col justify-end">
+                              <button
+                                onClick={() => {
+                                  const excess = groupConfig.vaultBalance - bankLinkage.excessThreshold;
+                                  if (excess <= 0) {
+                                    alert(`Verification: Current vault balance (${groupConfig.vaultBalance.toLocaleString()}) does not exceed your designated safety sweep threshold of (${bankLinkage.excessThreshold.toLocaleString()}). No sweep required.`);
+                                    return;
+                                  }
+
+                                  const randomRef = 'BANK_SWP_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                                  const timestamp = currentSimDate + " " + new Date().toTimeString().split(' ')[0];
+                                  const sweepTx: SavingTransaction = {
+                                    id: 'tx_swp_' + Date.now().toString().slice(-6),
+                                    memberId: 'system',
+                                    memberName: 'Sacco Sweep Engine',
+                                    amount: excess,
+                                    type: 'repayment', // outbound bank transfer
+                                    paymentMethod: 'bank',
+                                    reference: randomRef,
+                                    timestamp,
+                                    status: 'completed',
+                                    syncStatus: isOnline ? 'firebase_synced' : 'local_only',
+                                    notes: `Automated Liquidity Protection Sweep to Co-op Trust Account`
+                                  } as any;
+
+                                  // Deduct from mpesa vault pool
+                                  setTransactions(prev => [sweepTx, ...prev]);
+                                  setGroupConfig(prev => ({
+                                    ...prev,
+                                    vaultBalance: prev.vaultBalance - excess
+                                  }));
+
+                                  // SMS Alert
+                                  const sweepSMS: SMSMessage = {
+                                    id: 'sms_swp_' + Date.now().toString().slice(-6),
+                                    phone: "0722000000",
+                                    sender: "COOP_BANK",
+                                    content: `LIQUIDITY SECURITY SWEEP: Ksh ${excess.toLocaleString()} safely swept from ${groupConfig.groupName} M-Pesa to Co-operative Bank Escrow Trust Account. Yield state: Accruing at 6.5% p.a. Ref: ${randomRef}.`,
+                                    timestamp,
+                                    isRead: false
+                                  };
+                                  setSmsMessages(prev => [sweepSMS, ...prev]);
+
+                                  if (isOnline) {
+                                    saveTransaction(activeGroupId || 'upendo_unity', sweepTx);
+                                    saveSMSMessage(activeGroupId || 'upendo_unity', sweepSMS);
+                                    saveGroupAttributes(activeGroupId || 'upendo_unity', { vaultBalance: bankLinkage.excessThreshold });
+                                  }
+
+                                  alert(`Success: Swept ${excess.toLocaleString()} safely to the Co-operative Custodial Account to accrue interest and reduce mobile risk liability!`);
+                                }}
+                                className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-lg transition active:scale-97 cursor-pointer"
+                              >
+                                Trigger Manual safety Sweep
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      {/* Dynamic Paybill & Withdrawal tariff calculator */}
+                      <div className="border border-slate-150 p-5 rounded-2xl bg-slate-50/50 flex flex-col justify-between">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-1.5 text-indigo-900 font-extrabold uppercase text-[10px]">
+                            <Receipt className="w-4 h-4 text-slate-800" />
+                            <span>M-Pesa paybill Cost transparency</span>
+                          </div>
+                          
+                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                            Evaluate transaction charges for deposits and withdrawals dynamically. Eliminates sudden fee disputes during cash payouts!
+                          </p>
+
+                          {/* Interactive tool */}
+                          <div className="space-y-3 bg-white p-4 border border-slate-200 rounded-xl">
+                            <div>
+                              <label className="block text-[9px] text-slate-500 uppercase tracking-wider font-extrabold mb-1">
+                                Transaction Amount (Ksh)
+                              </label>
+                              <input
+                                id="mpesa-tariff-calc-input"
+                                type="number"
+                                defaultValue={5000}
+                                onChange={(e) => {
+                                  const val = Math.max(1, Number(e.target.value));
+                                  const displayNode1 = document.getElementById('calc-mpesa-with-fee');
+                                  const displayNode2 = document.getElementById('calc-mpesa-tr-fee');
+                                  
+                                  // Compute dynamic values
+                                  const calcMpesaFee = (amt: number): { withdrawFee: number; transferRate: number } => {
+                                    if (amt <= 100) return { withdrawFee: 10, transferRate: 0 };
+                                    if (amt <= 500) return { withdrawFee: 28, transferRate: 11 };
+                                    if (amt <= 1000) return { withdrawFee: 28, transferRate: 15 };
+                                    if (amt <= 1500) return { withdrawFee: 34, transferRate: 26 };
+                                    if (amt <= 2500) return { withdrawFee: 34, transferRate: 32 };
+                                    if (amt <= 3500) return { withdrawFee: 51, transferRate: 51 };
+                                    if (amt <= 5000) return { withdrawFee: 67, transferRate: 55 };
+                                    if (amt <= 7500) return { withdrawFee: 84, transferRate: 75 };
+                                    if (amt <= 10000) return { withdrawFee: 112, transferRate: 87 };
+                                    if (amt <= 15050) return { withdrawFee: 162, transferRate: 97 };
+                                    if (amt <= 20000) return { withdrawFee: 180, transferRate: 102 };
+                                    if (amt <= 35000) return { withdrawFee: 191, transferRate: 105 };
+                                    if (amt <= 50000) return { withdrawFee: 270, transferRate: 105 };
+                                    return { withdrawFee: 300, transferRate: 105 };
+                                  };
+
+                                  const fees = calcMpesaFee(val);
+                                  if (displayNode1) displayNode1.innerText = 'Ksh ' + fees.withdrawFee.toLocaleString();
+                                  if (displayNode2) displayNode2.innerText = 'Ksh ' + fees.transferRate.toLocaleString();
+                                }}
+                                className="w-full bg-slate-50 border border-slate-205 p-1.5 text-xs text-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 font-mono font-bold"
+                              />
+                            </div>
+
+                            <div className="border-t border-slate-100 pt-3 space-y-1.5 font-mono text-[10.5px]">
+                              <div className="flex justify-between text-slate-650">
+                                <span>Withdrawal tariff fee:</span>
+                                <span id="calc-mpesa-with-fee" className="font-bold text-slate-800">Ksh 67</span>
+                              </div>
+                              <div className="flex justify-between text-slate-650">
+                                <span>Transfer (Paybill) charge:</span>
+                                <span id="calc-mpesa-tr-fee" className="font-bold text-slate-805">Ksh 55</span>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+
+                        <div className="text-[10px] text-slate-450 border-t border-slate-150 pt-3 italic leading-normal">
+                          * These rates match standard Safaricom Kenya paybill tariff bands. Standard transaction fee disclosures protect members from escrow audits.
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* ROSCA MERRY-GO-ROUND SECTION */}
+              {activeTab === 'rosca' && (
+                <RoscaManager
+                  members={members}
+                  currentSimDate={currentSimDate}
+                  roscaCurrentCycle={roscaCurrentCycle}
+                  setRoscaCurrentCycle={setRoscaCurrentCycle}
+                  transactions={transactions}
+                  setTransactions={setTransactions}
+                  setMembers={setMembers}
+                  setSmsMessages={setSmsMessages}
+                  isOnline={isOnline}
+                  activeGroupId={activeGroupId}
+                  saveTransaction={saveTransaction}
+                  saveMember={saveMember}
+                  saveSMSMessage={saveSMSMessage}
+                  groupName={groupConfig.groupName}
+                  vaultBalance={groupConfig.vaultBalance}
+                  setVaultBalance={() => {}}
+                  setGroupConfig={setGroupConfig}
+                />
               )}
 
               {/* B. INVESTMENTS VIEW */}
@@ -1863,29 +2122,46 @@ export default function App() {
 
               {/* F. FINANCIALS */}
               {activeTab === 'financials' && (
-                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-xs space-y-4">
-                  <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
-                    Financial Statements & Audits
-                  </h3>
-                  <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl font-mono text-xs text-slate-600 space-y-2 text-left">
-                    <div className="flex justify-between">
-                      <span>Total Registered Savings Cap:</span>
-                      <span className="font-bold text-slate-800">Ksh {members.reduce((sum, m) => sum + m.totalSavings, 0).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Purchased Share Equity:</span>
-                      <span className="font-bold text-slate-800">Ksh {members.reduce((sum, m) => sum + m.shareBalance, 0).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total Active Out Loans:</span>
-                      <span className="font-bold text-slate-800">Ksh {loans.filter(l => l.status === 'approved' || l.status === 'overdue').reduce((sum, l) => sum + l.principal, 0).toLocaleString()}</span>
-                    </div>
-                    <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900 text-sm">
-                      <span>Total Audited Vault Assets:</span>
-                      <span>Ksh {(groupConfig.vaultBalance).toLocaleString()}</span>
+                <div className="space-y-6">
+                  <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-xs space-y-4">
+                    <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
+                      Financial Statements & Audits
+                    </h3>
+                    <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl font-mono text-xs text-slate-600 space-y-2 text-left">
+                      <div className="flex justify-between">
+                        <span>Total Registered Savings Cap:</span>
+                        <span className="font-bold text-slate-800">Ksh {members.reduce((sum, m) => sum + m.totalSavings, 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Purchased Share Equity:</span>
+                        <span className="font-bold text-slate-800">Ksh {members.reduce((sum, m) => sum + m.shareBalance, 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Total Active Out Loans:</span>
+                        <span className="font-bold text-slate-800">Ksh {loans.filter(l => l.status === 'approved' || l.status === 'overdue').reduce((sum, l) => sum + l.principal, 0).toLocaleString()}</span>
+                      </div>
+                      <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900 text-sm">
+                        <span>Total Audited Vault Assets:</span>
+                        <span>Ksh {(groupConfig.vaultBalance).toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
+
+                  <ChamaPillars
+                    members={members}
+                    setMembers={setMembers}
+                    transactions={transactions}
+                    setTransactions={setTransactions}
+                    smsMessages={smsMessages}
+                    setSmsMessages={setSmsMessages}
+                    currentSimDate={currentSimDate}
+                    welfareBalance={welfareBalance}
+                    setWelfareBalance={setWelfareBalance}
+                    isOnline={isOnline}
+                    activeGroupId={activeGroupId}
+                    groupName={groupConfig.groupName}
+                  />
                 </div>
               )}
 

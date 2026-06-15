@@ -404,7 +404,7 @@ export default function LandingAndAuth({ isOnline, onSelectGroup }: LandingAndAu
               <Building className="w-5.5 h-5.5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">ChamaSacco</h1>
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">Biashara Boost</h1>
               <span className="text-[10px] text-slate-500 font-mono tracking-wider font-bold">SECURE DIGITAL LEDGER ENGINE</span>
             </div>
           </div>
@@ -432,7 +432,7 @@ export default function LandingAndAuth({ isOnline, onSelectGroup }: LandingAndAu
                 </h2>
                 
                 <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-xl">
-                  ChamaSacco helps microfinance coalitions, self-help groups (Chamas), and commercial SACCOs record transactions, audit credit ratings, request loans, and automate voting consensus instantly.
+                  Biashara Boost helps microfinance coalitions, self-help groups (Chamas), and commercial SACCOs record transactions, audit credit ratings, request loans, and automate voting consensus instantly.
                 </p>
 
                 {/* Features Highlights Grid */}
@@ -1050,7 +1050,7 @@ export default function LandingAndAuth({ isOnline, onSelectGroup }: LandingAndAu
       {/* 3. BRAND SYSTEM FOOTER */}
       <footer className="border-t border-slate-200/60 bg-white/70 py-6 text-center text-[11px] text-slate-500 relative">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="font-medium">© 2026 ChamaSacco Systems • Multi-tenant audited ledgers & microbanking networks.</p>
+          <p className="font-medium">© 2026 Biashara Boost Systems • Multi-tenant audited ledgers & microbanking networks.</p>
           <div className="flex gap-4 font-mono text-[10px] font-bold">
             <span className="text-emerald-600">● V4.2 Sandbox Cloud System</span>
             <span>Digital decentralized consensus architecture</span>
