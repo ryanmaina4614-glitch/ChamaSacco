@@ -18,50 +18,67 @@ At the heart of the system is the **Dual-Viewport Workspace**:
 
 ## ⚡ Key System Features
 
-### 1. Unified Ledger Dashboard (The Chama Treasury)
+### 1. Interactive Onboarding Walkthrough Tour
+*   **Stepped Overlay System:** Incorporates an elegant, semi-transparent guided tour overlay to onboard new Sacco members and testers instantly. 
+*   **State-Linked Transitions:** As users proceed through the **5-Step Onboarding Roadmap**, the application dynamically swaps tabs behind the scenes and launches UI panels (e.g., opening the active mobile handset simulation container) relative to the active walkthrough step.
+*   **Context Action Highlights:** Shows helpful diagnostic alerts and pro-tips customized to the active onboarding element.
+
+### 2. Live Dynamic BarChart Ledger Selector
+*   **Refined Recharts Projection:** The primary dashboard features a dual savings-vs-loan bar visualization mapping ledger monthly indicators.
+*   **Interactive Month Selector:** Click directly on any monthly bar inside the Recharts container. The app instantly loads the matching calendar month's historic or projected savings deposits and microcredit disbursements into a dedicated **Dynamic Side-Panel Breakdown**.
+*   **Granular Status Labels:** Displays active member profiles, transaction values, and projection markers in real-time.
+
+### 3. Live Loan Book, Repayment Directory, & Governance Daemon
+*   **7.5s Active Audit Interval:** Implements an autonomous background scheduling daemon in `LoanGovernance.tsx` that ticks every 7.5 seconds using React effect sweeps.
+*   **Scheduler Signals Console:** Renders a high-density, terminal-like scheduler log showing real-time system diagnostics and deadline scan reports (e.g., counting Approaching vs. Overdue debts).
+*   **Proximity Warning Highlights:** Automatically monitors individual loan maturity constraints (`dateRepayBy`) against the current simulate date:
+    *   **⚠️ Nearing Deadline (<= 7 days):** Highlights loans in a distinctive **yellow/amber background** and attaches active warning alerts prompting board members to initiate callback procedures.
+    *   **🚨 Overdue / Grace Period:** Highlights late loans in **rose background warnings**, describing accrued penalties and automatic credit score drops.
+*   **Financial Progress Bars:** Visualizes clearance ratios for individual loans using real-time debt settlement sliders.
+
+### 4. Unified Ledger Dashboard (The Chama Treasury)
 *   **Group-Exclusive Privacy Guards:** Implements strict data isolation. Because the core engine partitions Firestore paths under isolated group documents (`groups/{groupId}`), the primary dashboard operates exclusively on that group's datasets, guarded by a dedicated visual partition verification badge. This prevents any multi-group leaks or public scraping.
 *   **Physical Vault Cash:** Monitors total liquid reserves held inside the physical treasury. Resources decrease instantly upon approved loan disbursements and increase automatically upon savings targets, share purchases, or interest-accrued loan repayments.
 *   **Accrued Member Savings:** Tracks cumulative member-contributed savings ledger entries toward targets.
 *   **Total Equity Shares:** Manages active equity shares purchased by members, valued at a customizable baseline rate (e.g., Ksh 500 per share unit).
 *   **Outstanding Loan Book:** Monitors externalized capital in circulation and expected interest yields.
-*   **Recharts Data Visualizations:** Includes advanced double-trend charts plotting monthly savings trends against active loan disbursement patterns to analyze microcredit velocity and capital allocations. Features an interactive **custom hover tooltip** displaying precise, high-fidelity Ksh values for each metric, improving information density and data clarity.
 *   **Transaction Audit Log:** An immutable ledger showing M-Pesa tracking reference strings, payment methods, timestamps, and database sync identifiers.
 
-### 2. Live Push & In-App Notification Engine
+### 5. Live Push & In-App Notification Engine
 *   **Dual-Frequency Synth Alerts:** Implements a professional, pleasant dual-frequency synthesizer chime using the **Web Audio API** to alert users instantly during transactions or loan changes without relying on external media assets.
 *   **Interactive Toast Banners:** Mounts beautifully timed, high-visibility visual toast alerts that slide out from the upper right, ensuring critical financial status updates are never missed.
 *   **Web Notification API Support:** Prompts users via an elegant bell toggle inside the application header, requesting system hardware push permission to dispatch native OS desktop alerts.
 *   **Simulated Carrier SMS Sync:** Automatically alerts users of transaction receipts and overdue microloans via realistic carrier outbox synchronization.
 
-### 2. Safeguarded Co-operative Credit (Amortization & Underwriting)
+### 6. Safeguarded Co-operative Credit (Amortization & Underwriting)
 *   **300% Multiplier Rule:** Restricts member credit exposure. A member cannot borrow more than 300% of their actual accrued physical savings.
 *   **Amortization Sandbox:** Lets users visually simulate loan structures comparing **Flat-Rate interest** (fixed cumulative rates) against **Reducing-Balance compound interest** schedules before submitting applications.
 *   **Guarantor Pool Locking:** Implements structured collateral risk sharing. Members can nominate multi-guarantor circles from the roster, allocating exact Ksh pledge caps. Loans remain locked until nominated guarantors log in and digitally sign.
 *   **Board Executive Assessment Panels:** For security, loans are governed by dual board checkmarks. The **Chairperson** and **Treasurer** must log in to their respective profiles and cast official votes. **To combat opaque decisions, both authorities are legally required to type a detailed assessment reason before signing.**
 
-### 3. Dynamic Credit Scoring Engine (300 to 850 scale)
+### 7. Dynamic Credit Scoring Engine (300 to 850 scale)
 To promote high target-discipline, the platform evaluates each member's behavior and computes real-time credit score weights:
 *   **Reliable Repayment:** On-time loan repayment elevates scores (+15 points up to 850).
 *   **Target Contribution Discipline:** Maintaining steady monthly savings adds positive integrity weight.
 *   **Overdue Fines Penalty:** Delinquent borrowers whose repayment deadlines have passed are hit with instant rating penalties (-60 points down to 300), locking them out of future high-tier USSD credit cycles.
 
-### 4. Interactive Safaricom M-Pesa eSIM Handset
+### 8. Interactive Safaricom M-Pesa eSIM Handset
 Simulates and controls cellular-dependent table-banking rotations:
-*   **Numeric USSD Console (`*384*55#`):** Simulates offline mobile network environments. Dialing the codes launches live USSD text pathways where members can review savings balances, buy shares, apply for credit, or pay debts without internet connectivity.
-*   **Simulated STK Push Paybill:** Prompts a secure 4-digit PIN gateway (e.g. `4321`) to send payments securely into the central group vault.
+*   **Numeric USSD Console (`*384#` / `*384*55#`):** Simulates offline mobile network environments. Dialing the codes launches live USSD text pathways where members can review savings balances, buy shares, apply for credit, or pay debts without internet connectivity.
+*   **Simulated STK Push Paybill:** Prompts a secure 4-digit PIN gateway (e.g., `4321`) to send payments securely into the central group vault.
 *   **Live cellular SMS Outbox:** Broadcasts carrier-style confirmation SMS receipts mapped to automated Kenyan network operators (e.g., standard M-PESA confirmations).
 
-### 5. Sacco Bulletin News & Multi-Media Hub
+### 9. Sacco Bulletin News & Multi-Media Hub
 *   **Governance Publication Broadcast:** Board officers (Chairperson, Treasurer, and Secretary) have exclusive credentials to publish official notices, briefs, and event summaries.
 *   **Media Attachments:** Announcements support adding direct attachments—including photos, briefing videos, and official folders.
 *   **Automatic Archive Synchronization:** Attaching legal compliance documents or briefs automatically isolates, classifies, and inserts those assets into the **Group Documents Cabinet** for zero-friction governance indexing.
 
-### 6. Official Sacco Documents Archive
+### 10. Official Sacco Documents Archive
 *   **Digital Share Capital Ledger:** Catalogs the official constitution, bylaws, and core ledgers.
 *   **Secretary Upload Privileges:** The Sacco Secretary has an exclusive uploader interface to add new meeting minutes, PDFs, or spreadsheet registers.
 *   **Origin Tracking:** Files are categorized based on their upload origin (Direct Secretary upload vs. automated Attachment extraction from news notices).
 
-### 7. Time Machine Simulation & Financial Auditing
+### 11. Time Machine Simulation & Financial Auditing
 *   **Multi-Month Fast forwarding:** Allows testers to leap forward into future calendar dates. Instantly calculates interest accumulation, marks delinquent loans, activates penalties, and triggers mobile SMS collections.
 *   **Consolidated Reconciliation Sheets:** Includes live print styling overrides to compile matching audit registers, officer signature sheets, and ledger-matching reports with zero system variance.
 
@@ -186,7 +203,7 @@ The platform scales seamlessly with continuous online synchronization powered by
 
 ## 🛠️ Tech Stack & Workspace Config
 
-*   **Runtime Engine:** Node.js, Vite with HMR configured behind an infrastructure reverse proxy.
+*   **Runtime Engine:** Node.js, Vite setup behind an infrastructure reverse proxy.
 *   **Client Core:** React (v18+), TypeScript, standard functional design with React context, Lucide UI icons.
 *   **Styling Engine:** Tailwind CSS utilizing high-contrast borders and deep space-slate canvases.
 *   **Animations:** Rich component micro-transitions powered by `motion/react`.
@@ -216,43 +233,36 @@ npm run dev
 
 Get started testing this sandboxed ecosystem with three illustrative exercises:
 
-### 🧪 Exercise A: Onboard a New Sacco Member and Purchase Equity Shares
-1.  Navigate to the **Members** tab on the left workspace panel.
-2.  Click the **Add New Member** button.
-3.  Fill in the onboarding form:
-    *   *Full Name:* `Flora Mwende`
-    *   *Phone Number:* `0712398456`
-    *   *Email Profile:* `flora.mwende@biasharaboost.org`
-    *   *National National ID:* `29401822` (Mandated identifier)
-4.  Submit the form. Flora joins the Sacco and is instantly selected as the **Active SIM SIM Profile** inside the cellphone interactive console on the right side.
-5.  On the cellphone simulator, choose **M-Pesa Sim** -> **Buy Equity Shares**.
-6.  Input amount `2500` (Flora wants to purchase 5 shares valued at Ksh 500 per unit) and click **Trigger Paybill (STK Push)**.
-7.  Type any four-digit PIN (e.g., `5555`) in the handset screen dialog and approve.
-8.  Observe the real-time update: flora's member record updates to show **5 Shares (Ksh 2,500)**, the central double-entry vault balance immediately scales up by `+2500`, and a standard cellular M-Pesa verification text arrives inside the phone's **SMS Feed** tab.
+### 🧪 Exercise A: Interactive Guided Tour & Dashboard Months Inspection
+1.  On first load, click the **Walkthrough Onboarding** button inside the main header row.
+2.  The guided tour modal triggers, introducing you to the digital ledger. Proceed through the steps:
+    *   Observe how step transitions automatically set active dashboards and reveal hidden simulator frames.
+3.  Navigate to the **Dashboard** tab. Locate the Recharts trend bar chart at the bottom left.
+4.  Click directly on the **June** monthly container bar.
+5.  Observe how the right-hand **Ledger Breakdown Side-Panel** updates instantly to load specialized double-entry transaction assets for June 2026!
 
 ### 🧪 Exercise B: Underwriting Co-operative Credit and Joint Board Decision-Making
-1.  While Flora Mwende's SIM profile remains active, navigate to the **Loans** tab.
-2.  Flora currently has Ksh 0 in savings, so her borrowing limit is Ksh 0. First, deposit Ksh 10,000 into her savings using the cellphone Paybill Simulator (**Deposit Savings** -> STK Push PIN confirmation).
-3.  Flora’s borrow limit immediately scales to **Ksh 30,000** (300% savings cap).
-4.  Scroll down to **Request Microloan**. Apply for a loan of `Ksh 20000` with the reducing-interest type and weekly installments. Select `David Kamau` as Flora's physical guarantor. Input purpose: `Chama Farm Inputs purchasing`. Submit.
-5.  Now Flora's application is created but marked as **Awaiting Signatures**. It needs the guarantor to pledge funds first.
-6.  Go to the **Members** list and click **David Kamau** to simulate his physical profile. David's handset simulator is now activated.
-7.  Go to the **Loans** dashboard. Locate Flora's pending guarantee request under David's active panel. David clicks **Sign Guarantor Pledge**.
-8.  The guarantee signature is verified! Now Flora's loan requires board consensus approvals from the **Chairperson** and **Treasurer** to disburse capital.
-9.  Select **Grace Mwangi** (Chairperson) from the Member list. Grace views Flora's loan, inputs her decision notes (e.g., *"Flora is a reliable grower with steady cash flow"*), and clicks **Approve**.
-10. Next, select **Linet Atieno** (Treasurer) from the Member list. Linet reviews, inputs her rationales (e.g., *"Chama database confirms collateral capacity"*), and signs off.
-11. With both executive assessment signatures secured and rationales permanently recorded in the transaction document, the **Simulate M-Pesa Disbursement** button unlocks.
-12. Click it! The simulation auto-disburses the cash, Flora's active loan balance updates, the Sacco’s Vault Cash decreases, and Flora receives a disbursement confirmation SMS.
+1.  Navigate to the **Members** tab on the left workspace panel. Activate a member profile such as **Flora Mwende** or **David Kamau**.
+2.  Flora/David's profile instantly configures the handset eSIM card simulator on the right.
+3.  Go to the cellphone simulator, choose **M-Pesa Sim** -> **Deposit Savings**.
+4.  Input amount `10000` and click **Trigger Paybill (STK Push)**. Confirm with any 4-digit PIN.
+5.  With savings recorded, David/Flora’s borrowing limit increases to **Ksh 30,000** (300% savings multiplier rule).
+6.  Go to the matching member's **Loans** Dashboard tab. Click **Request Microloan** and apply for `Ksh 20000` with Weekly installments. Select a physical guarantor and submit.
+7.  Swap simulated SIM profiles by selecting the physical guarantor from the list. The guarantor clicks **Sign Guarantor Pledge** to lock collateral risk.
+8.  Select **Grace Mwangi** (Chairperson) from the Member list. Grace views the loan, types her assessment notes, and approves.
+9.  Select **Linet Atieno** (Treasurer). Linet reviews, inputs her treasurer rationale, and approves.
+10. Click the unlocked **Simulate M-Pesa Disbursement Now** button! The cash is transferred, Sacco vaults decrease, and M-Pesa sends automated SMS receipt strings.
 
-### 🧪 Exercise C: Time Machine Auditing & PDF Reporting
-1.  With Flora’s loan active, look at the top header of the left panel containing the **Current Sim Date** (e.g., `2026-06-09`).
-2.  Click **Fast Forward +1 Month**.
-3.  The Sacco calendar advances 30 days!
-    *   Flora's weekly loan installment schedule marks her first repayments as **Overdue**.
-    *   Flora's credit rating drops by several points, and the platform sends automated SMS warnings to her phone simulator.
-4.  Go to the **Financials** tab.
-5.  View the automated **Monthly Audit Summary** table showing total group balances, total deposits, and projected vs. collected interest.
-6.  Click the **Export/Print Reconciliation Report** button to review a perfectly formatted physical print sheet with ledger details and dedicated signature blocks for the Chairperson and Treasurer.
+### 🧪 Exercise C: Time Machine & Governance Daemon Overdue Auditing
+1.  Navigate to the **Loans** management tab on the left panel. Scroll down to notice the **Live Chama Loan Book & Repayment Directory**.
+2.  Look at the black terminal screen displaying real-time **Background Audit Signals**. The daemon ticks autonomously every 7.5 seconds, running active compliance scans!
+3.  Locate the current sim date in the header and click **Fast Forward +1 Month**.
+4.  The system time cycles 30 days ahead. Inspect the **Live Chama Loan Book** below:
+    *   The active loan is evaluated as over its `dateRepayBy` maturity constraint.
+    *   The background daemon instantly flags this loan. The loan item flashes in a **warning rose background** card.
+    *   A high-visibility overdue alert appears advising immediately calling the client to initiate fallback collection proceedings.
+    *   The member's credit score falls by -60 points.
+5.  Verify the ledger updates by navigating to the **Financials** tab, and click **Export/Print Reconciliation Report** to compile a pristine physical balance sheet.
 
 ---
 

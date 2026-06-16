@@ -12,7 +12,10 @@ import {
   TrendingDown, 
   Coins, 
   Info,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle,
+  Activity,
+  Clock
 } from 'lucide-react';
 
 interface LoanGovernanceProps {
@@ -31,6 +34,7 @@ interface LoanGovernanceProps {
   onVoteLoan: (loanId: string, voterId: string, status: 'approve' | 'reject', voterName: string, reason?: string) => void;
   onDisburseLoan: (loanId: string) => void;
   onSignGuarantor?: (loanId: string, guarantorMemberId: string) => void;
+  currentSimDate: string;
 }
 
 export default function LoanGovernance({
@@ -41,9 +45,46 @@ export default function LoanGovernance({
   onApplyNewLoan,
   onVoteLoan,
   onDisburseLoan,
-  onSignGuarantor
+  onSignGuarantor,
+  currentSimDate
 }: LoanGovernanceProps) {
   const baseInterestRate = 5; // 5% per cycle (monthly)
+
+  // Background Governance Audit Scheduler State & Hook
+  const [auditLog, setAuditLog] = useState<string[]>([]);
+  const [schedulerHeartbeat, setSchedulerHeartbeat] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Mimic daemon loop checking dateRepayBy deadlines in background
+    const runAudit = () => {
+      setSchedulerHeartbeat(true);
+      setTimeout(() => setSchedulerHeartbeat(false), 900);
+
+      const timestamp = new Date().toTimeString().split(' ')[0];
+      const activeLoans = loans.filter(l => l.status === 'approved' || l.status === 'overdue');
+      
+      let nearingCount = 0;
+      let overdueCount = 0;
+      
+      activeLoans.forEach(l => {
+        const diffDays = Math.ceil(
+          (new Date(l.dateRepayBy).getTime() - new Date(currentSimDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (diffDays < 0) {
+          overdueCount++;
+        } else if (diffDays <= 7) {
+          nearingCount++;
+        }
+      });
+
+      const logMsg = `[${timestamp}] Live audit checklist evaluated: ${activeLoans.length} active. Approaching: ${nearingCount}, Overdue: ${overdueCount}.`;
+      setAuditLog(prev => [logMsg, ...prev.slice(0, 2)]);
+    };
+
+    runAudit();
+    const interval = setInterval(runAudit, 7500);
+    return () => clearInterval(interval);
+  }, [loans, currentSimDate]);
 
   // Primary request form configuration state
   const [applyAmount, setApplyAmount] = useState<string>('12000');
@@ -762,6 +803,7 @@ export default function LoanGovernance({
                     <div className="flex justify-end pt-2 border-t border-slate-150/50">
                       {isDisbursable ? (
                         <button
+                          type="button"
                           onClick={() => {
                             onDisburseLoan(loan.id);
                             alert("Safaricom M-Pesa automated transaction successfully completed! Principal cash disbursed to client.");
@@ -783,6 +825,191 @@ export default function LoanGovernance({
                       )}
                     </div>
                   </div>
+
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Active Live Loan Book Ledger & Auditing Scheduler Panel */}
+      <div className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-xs text-slate-800">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+              <Activity className="text-indigo-600 w-4.5 h-4.5 shrink-0" />
+              Live Chama Loan Book & Repayment Directory
+            </h3>
+            <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
+              Comprehensive list of active and historic credit capital. Highlights yellow for loans nearing their <span className="font-mono font-bold text-slate-700">dateRepayBy</span> target.
+            </p>
+          </div>
+          
+          {/* Autonomous Scheduler Status */}
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-left">
+            <span className="relative flex h-2 w-2 select-none">
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${schedulerHeartbeat ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${schedulerHeartbeat ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+            </span>
+            <div className="text-[10px] font-mono leading-normal">
+              <span className="font-bold text-slate-800 block">Governance Daemon Status</span>
+              <span className="text-[9px] text-slate-400 font-medium">Active monitoring interval</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Scheduler Logs Live Display */}
+        {auditLog.length > 0 && (
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 font-mono text-[9.5px] text-slate-300 space-y-1 shadow-inner text-left">
+            <div className="flex items-center justify-between text-[8px] uppercase font-bold text-slate-500 pb-1 border-b border-zinc-800">
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3 text-indigo-400 shrink-0" />
+                Live Background Audit Signals (Scheduler)
+              </span>
+              <span className="text-[8px] bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">7.5s ticks</span>
+            </div>
+            {auditLog.map((log, index) => (
+              <div key={index} className={`truncate font-semibold tracking-tight ${index === 0 ? 'text-indigo-350' : 'text-slate-400 opacity-80'}`}>
+                {log}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Active disbursed loans list */}
+        <div className="space-y-4">
+          {loans.filter(l => l.status !== 'pending').length === 0 ? (
+            <div className="bg-slate-50 text-center py-8 rounded-2xl border border-slate-150 text-slate-400 italic text-xs">
+              No active or disbursed loans registered on ledger yet. Approve and disburse a request in the section above to initialize this board.
+            </div>
+          ) : (
+            loans.filter(l => l.status !== 'pending').map((loan) => {
+              // Calculate remaining parameters
+              const interestRate = loan.interestRate || 5;
+              let calculatedInterest = 0;
+              if (loan.interestType === 'flat') {
+                calculatedInterest = loan.principal * (interestRate / 100) * loan.durationMonths;
+              } else {
+                let principalRemaining = loan.principal;
+                const monthlyPrincipal = loan.principal / loan.durationMonths;
+                for (let i = 0; i < loan.durationMonths; i++) {
+                  calculatedInterest += principalRemaining * (interestRate / 100);
+                  principalRemaining -= monthlyPrincipal;
+                }
+              }
+              const totalObligation = loan.principal + calculatedInterest;
+              const totalRepaidOnLoan = loan.repaymentHistory ? loan.repaymentHistory.reduce((sum, h) => sum + h.amount, 0) : 0;
+              const remainingObligation = Math.max(0, totalObligation - totalRepaidOnLoan);
+              
+              // Days calculation relative to currentSimDate
+              const diffTime = new Date(loan.dateRepayBy).getTime() - new Date(currentSimDate).getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              
+              const isNearingDeadline = loan.status === 'approved' && diffDays >= 0 && diffDays <= 7;
+              const isOverdue = loan.status === 'overdue' || (loan.status === 'approved' && diffDays < 0);
+
+              // Determine visual theme based on proximity
+              let borderStyle = "border-slate-200 bg-white hover:bg-slate-50/50";
+              let badgeBg = "bg-slate-100 text-slate-700 border-slate-200";
+              let daysStyle = "text-slate-600";
+              let highlightIndicator = null;
+
+              if (isNearingDeadline) {
+                // Highlighting yellow for immediate attention
+                borderStyle = "border-amber-300 bg-amber-50/70 hover:bg-amber-50 shadow-xs ring-1 ring-amber-200/50";
+                badgeBg = "bg-amber-100 text-amber-800 border-amber-200";
+                daysStyle = "text-amber-800 font-extrabold";
+                highlightIndicator = (
+                  <div className="bg-amber-100 border-l-4 border-amber-500 p-2.5 rounded-r-lg text-[10.5px] text-amber-900 font-sans leading-relaxed mb-1 flex items-start gap-2 text-left">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
+                    <span>
+                      <strong>⚠️ CRITICAL DEADLINE WARNING:</strong> Repayment target of <strong className="font-mono">{loan.dateRepayBy}</strong> is approaching in <strong>{diffDays} day{diffDays === 1 ? '' : 's'}</strong>! A fallback grace window triggers soon under automated consensus penalties. Please prompt client for partial or total repayment immediately.
+                    </span>
+                  </div>
+                );
+              } else if (isOverdue) {
+                // Overdue
+                borderStyle = "border-rose-300 bg-rose-50/70 hover:bg-rose-50 shadow-xs ring-1 ring-rose-200/50";
+                badgeBg = "bg-rose-100 text-rose-805 border-rose-200";
+                daysStyle = "text-rose-800 font-bold";
+                highlightIndicator = (
+                  <div className="bg-rose-100 border-l-4 border-rose-500 p-2.5 rounded-r-lg text-[10.5px] text-rose-900 font-sans leading-relaxed mb-1 flex items-start gap-2 text-left">
+                    <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5 animate-bounce" />
+                    <span>
+                      <strong>🚨 GRACE PENALTY EXCEEDED / ACCRUE STATE:</strong> This loan is currently <strong className="font-mono">{Math.abs(diffDays)} days</strong> past due as of system date <strong className="font-mono">{currentSimDate}</strong>! Late penalties have been registered to client's global debt ledger.
+                    </span>
+                  </div>
+                );
+              } else if (loan.status === 'repaid') {
+                // Paid off
+                badgeBg = "bg-emerald-50 text-emerald-800 border-emerald-200";
+              }
+
+              return (
+                <div key={loan.id} className={`p-4 rounded-2xl border transition text-xs space-y-3 ${borderStyle}`}>
+                  {highlightIndicator}
+
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-left">
+                    {/* Member and summary details */}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-extrabold text-slate-850 text-sm">{loan.memberName}</span>
+                        <span className={`text-[9px] uppercase px-2 py-0.5 rounded-lg border font-mono font-bold ${badgeBg}`}>
+                          {loan.status === 'repaid' ? 'Fully Paid ✓' : isOverdue ? 'LATE / IN OVERDUE' : isNearingDeadline ? 'WARNING: DUE SOON' : 'IN COMPLIANCE / ACTIVE'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-normal font-medium">
+                        Disbursed Principal: <strong className="text-slate-800">{formatKsh(loan.principal)}</strong> • Interest Type: <span className="uppercase font-mono text-[9px] font-bold text-slate-600">{loan.interestType}</span> • Schedule Track: <span className="uppercase font-mono text-[9px] text-indigo-650 font-semibold">{loan.installmentTrack}</span>
+                      </p>
+                    </div>
+
+                    {/* Deadline stats */}
+                    <div className="text-left md:text-right shrink-0">
+                      <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase">Date Repay Target</span>
+                      <span className={`text-xs font-mono font-bold block mt-0.5 ${daysStyle}`}>
+                        {loan.dateRepayBy} {loan.status !== 'repaid' ? `(${diffDays > 0 ? `${diffDays} days left` : diffDays === 0 ? 'Due Today!' : `${Math.abs(diffDays)} days overdue`})` : '(Paid)'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Financial indicators visual progress bars */}
+                  <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl space-y-2 text-[11px] font-semibold text-slate-700">
+                    <div className="flex justify-between items-center text-[10.5px]">
+                      <span>Repayment Clearance Ratio:</span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {((totalRepaidOnLoan / totalObligation) * 100).toFixed(0)}% ({formatKsh(totalRepaidOnLoan)} repaid of {formatKsh(totalObligation)})
+                      </span>
+                    </div>
+
+                    {/* Progress slider bar representation */}
+                    <div className="w-full h-1.5 rounded-full overflow-hidden bg-slate-200 flex">
+                      <div 
+                        style={{ width: `${Math.min(100, (totalRepaidOnLoan / totalObligation) * 100)}%` }}
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                      />
+                    </div>
+
+                    <div className="flex justify-between text-[10px] font-mono text-slate-500 pt-1.5 border-t border-slate-200/40">
+                      <span>Total Owed (Incl. Interest): {formatKsh(totalObligation)}</span>
+                      <span className="text-emerald-700 text-right font-extrabold font-semibold">Active Balance: {formatKsh(remainingObligation)}</span>
+                    </div>
+                  </div>
+
+                  {/* Repayment statement logs preview if any repayments were logged */}
+                  {loan.repaymentHistory && loan.repaymentHistory.length > 0 && (
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1 text-[10.5px] text-left">
+                      <span className="text-[9px] uppercase tracking-wider text-slate-450 block font-bold">M-PESA Settlement Log History:</span>
+                      <div className="space-y-1">
+                        {loan.repaymentHistory.map((rep, repIdx) => (
+                          <div key={repIdx} className="flex justify-between items-center bg-white p-1.5 border border-slate-150 rounded-md font-mono text-[9.5px] font-medium text-slate-700">
+                            <span>📅 {rep.date} • Ref: {rep.reference}</span>
+                            <span className="font-bold text-emerald-700">+{formatKsh(rep.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                 </div>
               );

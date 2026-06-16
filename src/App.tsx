@@ -1654,6 +1654,7 @@ export default function App() {
                   onVoteLoan={handleVoteLoan}
                   onDisburseLoan={handleDisburseLoan}
                   onSignGuarantor={handleSignGuarantor}
+                  currentSimDate={currentSimDate}
                 />
               )}
 

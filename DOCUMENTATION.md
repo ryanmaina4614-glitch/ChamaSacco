@@ -1,91 +1,165 @@
-# Upendo Unity - Group Savings & Micro-credit Automation
+# Biashara Boost - Technical & Operational Documentation
 
-Welcome to the **Upendo Unity Chama & Table Banking Automation** ledger coordinator. This application has been designed specifically to replace vulnerable manual physical ledgers and cash boxes with an error-free, double-entry automated mobile reconciliation workspace.
+Welcome to the comprehensive technical documentation for **Biashara Boost Chama & Table Banking Automation** platform. 
 
-Below is an analytical overview of the software's functional layout, architectural components, and a step-by-step guide on how to test every module inside the live sandbox.
+This workspace is engineered to replace manual paper notebooks and unmonitored physical cash boxes with a high-fidelity, dual-entry, real-time microfinance ledger. It is calibrated for community self-help rotating financial collectives (known as Chamas, SACCOs, or ROSCAs in East Africa).
 
 ---
 
 ## 📖 Module-by-Module Breakdown
 
-The application is structured logically to facilitate complete offline-first operational consistency:
+The system is split into two co-dependent viewports: the **Management Cabin** (left viewport) and the **Safaricom M-Pesa Handset Emulator** (right viewport).
 
-### 1. Unified Ledger Dashboard (Chama Ledger)
-- **Digital Vault Cash:** Tracks liquid cash reserves pooling inside the Chama. Funds decrease immediately upon approved loan disbursements and increase upon automated member savings, equity purchases, and loan repayment.
-- **Member Savings Vault:** Monitors cumulative client balances toward monthly targets.
-- **Total Equity Shares:** Tracks active investment shares issued at the designated baseline rate (Ksh 500 per unit).
-- **Outstanding Loan Book:** Monitors total principal and accrued interest currently distributed to borrowing members.
-- **Vault Activity Graph:** Handcrafted SVG trendline charts plotting real-time reserves versus active credit exposure across month-by-month rotations.
-- **Transaction Ledger:** A fully searchable, paginated ledger showing immutable audit trails of M-Pesa references and bank mobile wallet payloads.
+### 1. Unified Sacco Core Analytics (Dashboard)
+The home dashboard provides an intuitive, real-time visualization of Sacco assets and liquidity distribution:
+- **Digital Vault Cash:** Reflects liquid physical cash held in the group treasury. It automatically drops during loan payouts and accrues upon deposit, share buy-ins, and loan repayments.
+- **Accrued Member Savings:** The pooled cash backed by member-contributed savings ledger records toward individual monthly milestones.
+- **Total Sacco Equity Shares:** Reflects structural share capital holdings. Saccos sell shares at a default unit price (Ksh 500/share) to build permanent capital reserves.
+- **Circulating Loan Book:** Records capital currently externalized to borrowing members plus outstanding interest yields.
+- **Interactive Recharts Trend Visualizer:**
+    - Displays savings growth trends vs. cumulative loan disbursements month-by-month.
+    - **Dynamic Bar Selector:** Clicking on any month's bar element triggers a selected period transition, querying and loading that period's physical balance records into the **Dynamic Side-Panel Breakdown**.
+    - **Interactive Pro-tip and Hover Tooltip:** Displays actual currency distributions with enhanced high-fidelity statistics.
+- **Global Sacco Transaction Register:** A chronological audit registry detailing digital M-Pesa references, transaction categories (Savings, Loan Disbursal, Late Penalties, Share Purchase), timestamps, and database sync validation tags.
 
-### 2. Interactive Handset Sandbox (Safaricom M-Pesa SIM Simulator)
-Since this is a sandboxed simulation representing unbanked or mobile-money dependent community groups:
-- **USSD Menu Sim (`*384*55#`):** Replicates standard offline telecom interfaces. Members use numeric dialogue trees to check savings balances, purchase shares, apply for instant credit (up to 300% of physical savings balance), and repay outstanding obligations.
-- **Paybill SIM (STK Push Handshake):** Mimics the secure Safaricom PIN collection request. Inputting any four-digit PIN (e.g., `4321`) posts transactions safely to the main Chama database, triggering instant event emissions.
-- **Simulated SMS Inbox:** Generates instant network confirmation statements in full compliance with Kenyan carrier patterns (e.g., standard M-PESA receipt confirmation codes).
+### 2. Guided onboarding: Walkthrough Tour Overlay
+- **Multi-Step Guided Flow:** Incorporates a friendly, high-contrast walkthrough dialog showing beginners the most crucial core modules.
+- **Contextual State Swapping:** The tour engine dynamically manages the parent viewport:
+    *   *Step 1 (Welcome Panel):* Explains table-banking dynamics.
+    *   *Step 2 (Data Analytics):* Swaps the active tab to `Dashboard` to show Recharts bars and guides user to click monthly bars.
+    *   *Step 3 (Handset USSD Console):* Toggles the simulated mobile console sliding panel to visible on the right.
+    *   *Step 4 (Transactions Section):* Directs the user to the underlying M-Pesa billing boards.
+    *   *Step 5 (Resilience):* Explains how offline/online sync mechanisms write cached updates back to Cloud servers.
+- **Local Onboarding Persistence:** Saves the completed tour flag in `localStorage` (`chama_tour_completed_v2`) to prevent intrusive repeat overlays for returning users, but allows manual trigger via the **Walkthrough Onboarding** button in the header.
 
-### 3. Member Roster Center
-- **Membership Administration:** Add new members by registering legal names, carrier phone numbers, and email coordinates.
-- **SIM Profiling Selector:** Swap simulated physical SIM cards dynamically. Click on any member profile to instantly configure the Handset Sandbox to mimic that client's device, active balances, and SMS text log feed.
-- **Credit Assessment Scoring:** A real-time scoring algorithm (from 300 to 850) that adjusts dynamically based on repayment reliability, monthly target discipline, and overdue events. Outstanding borrowers with overdue debts are heavily penalized (-60 points), whereas timely repayment increases trust caps (+15 points).
+### 3. Sacco Members Directory & Credit Scoring System
+- **Member Roster:** Houses full administrative details: Legal Name, National ID (unique, verified identifying field), Carrier Contact, and Active Debt status.
+- **Interactive eSIM Selector:** Click any member card to instantly hot-swap the simulated physical SIM card inside the handset emulator. The cellphone container automatically shifts to highlight that member's credentials, active mobile banking statements, and SMS outbox.
+- **Real-time Credit Score Tracker (Range: 300 to 850):**
+    - A dynamic algorithmic scoring engine.
+    - Timely amortization settlement adds **+15 score points** (maxing at 850).
+    - Unresolved late debts generate instant delinquent warnings and trigger major scoring penalties (**-60 points**, bottoming at 300).
+    - Low-scoring members are automatically restricted from requesting high-tier credit ratios within USSD banking menus.
 
-### 4. Co-operative Lending & Governance Board
-- **Request Microloan Box:** Apply for collateral-free credit governed by 300% savings caps.
-- **Amortization Simulator:** Sandbox tools visualizing the exact repayment cycles of **Flat Rate interest** (fixed cumulative rate) versus **Reducing Balance compound interest**.
-- **Consensus Committee Approval Log:** In strict table-banking schemes, funds are only disbursed via multi-party executive signature consensus. Active committee members (excluding the active borrower) can toggle approvals. Reaching 2 executive checkmarks unlocks simulated instant M-Pesa disbursements.
+### 4. Co-operative Lending & Governance Board (Underwriting)
+- **Credit Limit Calculator:** Enforces high-safety underwriting guidelines. Under the classic Chama co-operative **300% Multiplier Rule**, a member’s borrowing capacity is capped at 3x their active accrued savings.
+- **Interactive Plan Amortizer:** Allows comparing **Flat Rate interest** structures (flat cycle calculation) against **Reducing-Balance interest** (monthly computed compound interest) prior to commitment.
+- **Multi-Pledge Collateral (Guarantor Ring):** Members can delegate co-debtors to pledge portions of their personal savings balances as loan collateral. The loan stays locked until the selected guarantors log in and digitally sign off.
+- **Multi-Sig Executive Consensus Panel:** 
+    - Implements triple-lock board verification. 
+    - The **Chairperson** and **Treasurer** must log in to their respective Sacco administrative profiles.
+    - **Commitment To Transparency:** Officers cannot simply click "Approve". They are strictly required to type out their detailed **Executive Assessment Reason** into a text field before their digital signature is accepted.
+    - Once both approvals are secured, the simulated Safaricom API disbursal pipeline unlocks, enabling instant mobile cash delivery.
 
-### 5. Consolidated Monthly Audit Reconciliation Tool
-- **Export Excel-compatible CSVs:** Download full audit ledgers directly in comma-separated value form.
-- **Print Reports:** Isolates the current screen to compile professional physical paper outputs, signatures sheets for the Chama Chairperson and Treasurer, and ledger-matching reports with zero variance.
+### 5. Live Loan Book, Repayment Directory, & Governance Daemon
+In community SACCO banking, monitoring and warning against pending deadlines is vital to prevent default leakage:
+- **Autonomous Governance Daemon:** Implements a background scheduler hook in `LoanGovernance.tsx` that ticks every 7.5 seconds, running live checks on Sacco balance records and individual loan lifetimes.
+- **Log Activity Shell:** Renders a terminal output log compiling background check reports (e.g., scan timestamps, overdue accounts, approaching maturity thresholds).
+- **Proximity Highlighting System:** Monitors `dateRepayBy` dates against current system dates:
+    *   **⚠️ Approaching Target (<= 7 days remaining):** Renders the loan in a distinctive, warning **amber/yellow box** outline. Automatically appends a prominent alert banner warning Sacco officials that a critical repayment maturity deadline is coming and advising manual outreach.
+    *   **🚨 Late Overdue (Past Due):** Highlights loans in a severe **rose/red container box** with penalty alert summaries and drop score updates.
+- **Settlement Metrics Sliders:** Houses interactive progress bars depicting accurate clearance percentages (e.g., Ksh repaid out of total obligation).
 
----
+### 6. Interactive Safaricom Handset Simulation
+Provides a full-fidelity cellular ecosystem mirroring real mobile-money behaviors:
+- **Numeric USSD Console (`*384#`):** Replicating cellular GSM text menus. Dialing the shortcodes opens text menus for checking balances, depositing cash, buying shares, requesting credit, and clearing debts over network simulation.
+- **STK M-PESA Push Paybill:** Simulates cellular STK Push PIN dialog prompts. Entering any 4-digit PIN posts payments directly to double-entry ledger databases, triggering audio chimes.
+- **SIM SMS Notification Thread:** Houses automated carrier statements (e.g., M-Pesa transaction reference strings, penalty alerts, disbursement confirmations) corresponding to real-world carrier patterns.
 
-## 🚀 Step-by-Step Simulation Sandbox Workflows
-
-Follow this walkthrough to witness real-time event synchronization across all integrated viewports:
-
-### Activity A: Registering a Member and Making a Deposit
-1. Select the **Member Roster** tab in the main navigation.
-2. Click **Add New Member** on the top right.
-3. Input:
-   - *Full Name:* `Mary Wanjiku`
-   - *Phone Number:* `0712345678` (Kenyan format starting with `01` or `07`)
-   - *Email:* `mary.wanjiku@upendochama.org`
-4. Submit the form. Mary will join the roster and instantly be selected as the **Active SIM**.
-5. Locate the **Handset Interconnected Sandbox** on the right sidebar. Go to the **M-Pesa Sim** tab.
-6. Check that the *Member SIM Reference* field matches Mary's phone (`0712345678`).
-7. Enter Amount `1500` and select "Buy Equity Shares".
-8. Click **Trigger Paybill (STK Push)**. The phone screen switches to the secure SIM toolkit PIN window.
-9. Type any 4 digits (e.g., `4321`) and click **OK**.
-10. Watch the real-time event chain: M-Pesa delivers a secure push -> Mary has purchased 3 Shares (Ksh 1,500) -> Chama Vault reserves increase by Ksh 1,500 -> Safaricom broadcasts a receipt SMS in the **SMS Feed** tab of the phone!
-
-### Activity B: Applying and Governing a Table-Banking Loan
-1. Under **Member Roster**, select **David Kamau** to activate his simulated SIM card profile.
-2. Go to the **Lending Board** tab.
-3. Scroll down to *Request Microloan*:
-   - Specify Amount: `15000` (David has Ksh 35,000 in savings, meaning his max credit limit is 3x Savings = Ksh 105,000).
-   - Enter a business statement (e.g., "Purchasing inventory").
-   - Click **Submit Loan Application**.
-4. The loan is created but marked as **Awaiting Committee Signature** under the *Consensus Committee Logs*.
-5. Because David Kamau cannot vote on his own loan, signatures are required from other Chama trustees:
-   - Click **Approve** under **Linet Atieno (Exec)**.
-   - Click **Approve** under **Grace Mwangi (Exec)**.
-6. Since David now has 2 executive approvals, the simulated disbursement triggers!
-7. Click **Simulate M-Pesa Disbursement Now**.
-8. David's member profile will reflect the new debt obligation, the main Group vault cash decreases by Ksh 15,000, and a payout audit reference is generated.
-
-### Activity C: Accumulating Cycles & Penalty Auditing
-1. Locate the **Current Sim Date** widget in the *Chama Ledger* header (e.g., `2026-06-09`).
-2. Click **Fast Forward +1 Month**.
-3. Watch as the system cycles 30 days ahead:
-   - Automated monthly reminder notifications are broadcast to all members.
-   - Any approved loans whose *Repay By* date is surpassed are labeled as **Overdue**.
-   - Delinquents suffer a heavy credit score penalty (-60 points) and receive automated warning alerts advising immediate Paybill payment.
+### 7. Consolidated Audit & Reporting Tool
+- **Time-Travel Simulation:** Enables testers to cycle months ahead, triggering interest accumulation, grace periods, penalty fines, and automated overdue warning letters in real time.
+- **Consolidated Sacco Audit Register:** Compiles financial balance sheets comparing savings, shares, interest payouts, and vault cash reserves.
+- **Print Override Templates:** Formats professional audit printouts with formal signature placeholders for the Sacco Chairman, Secretary, and Treasurer.
 
 ---
 
-## 🛠️ Technological Architecture
-- **Framework:** React with TypeScript.
-- **Styling:** Tailored Tailwind CSS utility vectors and Google Inter Display font pairings for high-contrast slate layouts.
-- **State Preservation:** LocalStorage persistence keeps simulated historical logs alive across page refreshes.
-- **Audit Print Sheets:** Structured Media Print CSS selectors to format professional audit logs directly.
+## 🔒 Firebase Security Schema (Rules Guide)
+
+Biashara Boost is reinforced by production-level Firebase Firestore safety rules configured in `firestore.rules`.
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Core validator helper checking Sacco membership
+    function isSaccoMember(groupId, memberId) {
+      return exists(/databases/$(database)/documents/groups/$(groupId)/members/$(memberId));
+    }
+    
+    match /groups/{groupId} {
+      allow read, write: if true; // Config-level accessibility
+      
+      match /members/{memberId} {
+        allow read, write: if true; // Members data directory
+      }
+      
+      match /transactions/{txId} {
+        // Double-entry logs are immutable once created to prevent balance fraud
+        allow read: if true;
+        allow create: if isSaccoMember(groupId, request.resource.data.memberId);
+        allow update, delete: if false; 
+      }
+      
+      match /loans/{loanId} {
+        allow read: if true;
+        // Underwriting safety limits are verified relative to voter roles
+        allow create, update: if true;
+        allow delete: if false;
+      }
+      
+      match /announcements/{annId} {
+        allow read: if true;
+        allow write: if true; // Handled via board privileges
+      }
+      
+      match /documents/{docId} {
+        allow read: if true;
+        allow write: if true;
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🧪 Simulation Walkthrough Scenarios
+
+Test the synchronized state mechanics using three standard walkthrough routines:
+
+### Scenario A: Walkthrough onboarding & Chart Month Clicks
+1. Navigate to the top header and click **Walkthrough Onboarding**. 
+2. Step through the guided prompts. The app automatically flips options:
+    *   *Step 1:* Launches welcoming info.
+    *   *Step 2:* Moves the main screen back to the **Dashboard** and points to the monthly chart.
+    *   *Step 3:* Slides open the Safaricom cellular container.
+3. Finish the tour. Click the Recharts bar labeled **June**.
+4. The **Ledger Side-panel** instantly queries, loads, and displays the transaction list (depositors list and disbursed microloans list) specific to June 2026.
+
+### Scenario B: Dynamic Guarantor Underwriting & Multi-Sig Voting
+1. Choose a member from the directory (e.g., **David Kamau**) who has accumulated a high savings balance.
+2. Under David’s active SIM profile, open the cellphone simulator, choose **M-Pesa Sim** -> **Deposit Savings**, and trigger an STK deposit of `Ksh 10,000`.
+3. Open the **Loans** dashboard on the left management panel. Click **Request Microloan** to apply for `Ksh 15,000` (within David's 3x limit multiplier). Select another member as guarantor (e.g., **Linet Atieno**), write a business purpose, and submit.
+4. The loan application is logged but marked as **Awaiting Signatures**. It stays locked in escrow.
+5. In the members directory, click **Linet Atieno** to hot-swap simulated SIM cards. Her handset eSIM is configured.
+6. Under Linet's administrative view in the **Loans** page, she locates the pending pledge under her guarantor panel and clicks **Sign Guarantor Pledge**.
+7. In the members directory, swap to **Grace Mwangi** (Sacco Chairperson). Under her Chairperson profile, she views the loan, types her rationale (e.g., *"David is a high-yield farmer with clean Sacco track"*), and signs her approval.
+8. Swap to **Linet Atieno** (Sacco Treasurer). Under her Treasurer view, she types her treasurer rationale and clicks approve.
+9. Watch as the **Simulate M-Pesa Disbursement Now** button unlocks. Click it! The funds are dispersed, Sacco vaults decrease, and David receives M-Pesa receipts.
+
+### Scenario C: Simulating Time Cycles & Daemon Proximity Alarms
+1. Under Flora’s active SIM, authorize and disburse a standard microloan due in 1 month (e.g., `dateRepayBy` is configured for July 1, 2026).
+2. Go to the top header sim date controller and click **Fast Forward +1 Month**.
+3. Watch the **Live Chama Loan Book & Repayment Directory** panel:
+    *   The background Governance Daemon (ticking every 7.5 seconds) scans and flags the loan as past due.
+    *   The loan card outline turns **rose/red**.
+    *   The member's credit score drops instantly by **-60 points**.
+    *   A high-visibility warning alert occupies the card, notifying management that the client is delinquent and advising immediate carrier collection alerts or fine penalties.
+4. Have the member pay back via USSD or Paybill Simulator. The clearance meter updates to 100% and the loan transitions gracefully to **Fully Paid ✓**.
+
+---
+
+```
+   EMPOWERING LOCAL CHAMA GOVERNANCE WITH IMMUTABLE LEDGER STANDARDS 🌸 BIASHARA BOOST
+```
