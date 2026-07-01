@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { GroupConfig, SavingTransaction, Member } from '../types';
-import { ArrowUpRight, ArrowDownLeft, Shield, Banknote, Users, Activity, Wallet, Receipt, Calendar, FileSpreadsheet, Search, RefreshCw, Printer } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Shield, Banknote, Users, Activity, Wallet, Receipt, Calendar, FileSpreadsheet, Search, RefreshCw, Printer, Volume2, Languages, Eye } from 'lucide-react';
 import MonthlyAuditSummary from './MonthlyAuditSummary';
 import {
   ResponsiveContainer,
@@ -24,6 +24,9 @@ interface DashboardStatsProps {
   onFastForwardTime: () => void;
   onResetDatabase: () => void;
   onUpdateGroupConfig?: (config: GroupConfig) => void;
+  elderlyMode?: boolean;
+  swahiliMode?: boolean;
+  speakPhrase?: (text: string, isSwahili: boolean) => void;
 }
 
 export default function DashboardStats({
@@ -34,11 +37,11 @@ export default function DashboardStats({
   currentSimDate,
   onFastForwardTime,
   onResetDatabase,
-  onUpdateGroupConfig
+  onUpdateGroupConfig,
+  elderlyMode = false,
+  swahiliMode = false,
+  speakPhrase
 }: DashboardStatsProps) {
-  const [filterTx, setFilterTx] = useState<string>('all');
-  const [searchTx, setSearchTx] = useState<string>('');
-  const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
   const [isConfigOpen, setIsConfigOpen] = useState<boolean>(false);
   const [configForm, setConfigForm] = useState<GroupConfig>({ ...groupConfig });
 
@@ -64,14 +67,6 @@ export default function DashboardStats({
   const formatKsh = (amount: number) => {
     return 'Ksh ' + amount.toLocaleString('en-KE', { minimumFractionDigits: 0 });
   };
-
-  // Switch filter array
-  const filteredTransactions = transactions.filter(tx => {
-    const matchesFilter = filterTx === 'all' || tx.type === filterTx;
-    const matchesSearch = tx.memberName.toLowerCase().includes(searchTx.toLowerCase()) || 
-                          tx.reference.toLowerCase().includes(searchTx.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
 
   // Selected monthly period state for the detailed side breakdown panel
   const [selectedPeriod, setSelectedPeriod] = React.useState<string | null>(null);
@@ -253,6 +248,390 @@ export default function DashboardStats({
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 5);
   }, [members, loans, transactions]);
+
+  if (elderlyMode) {
+    return (
+      <div className="space-y-8 text-left">
+        {/* Simple Swahili/English Header with Voice */}
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/15 rounded-full pointer-events-none" />
+          <div className="relative z-10 space-y-3">
+            <span className="bg-white/20 text-[10px] uppercase font-mono px-3 py-1 rounded-full font-bold tracking-wider">
+              {swahiliMode ? 'Muonekano Rahisi wa Wazee na Msaada wa Sauti' : 'Elderly Easy Mode & Spoken Voice Assistance'}
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+              {swahiliMode ? `Habari, Karibu kwenye ${groupConfig.groupName}!` : `Hello, Welcome to ${groupConfig.groupName}!`}
+            </h1>
+            <p className="text-sm sm:text-base text-emerald-100 max-w-2xl font-medium">
+              {swahiliMode 
+                ? 'Kwenye ukurasa huu, unaweza kuona kiasi cha pesa kilicho kwenye Chama na akiba zako kwa herufi kubwa na rahisi kuelewa. Bofya alama ya spika kusikiliza maelezo.' 
+                : 'Here you can view group funds and savings in extra large, easy-to-read cards. Click any speaker button to listen to accounts read out loud.'}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  const phrase = swahiliMode 
+                    ? `Mfumo wa kusaidia wazee umewashwa. Pesa za sasa kwenye sanduku ni ${groupConfig.vaultBalance} Shilingi za Kenya. Akiba yenu yote ni ${totalSavingsCommitted} Shilingi.` 
+                    : `Easy assistance mode is active. Current group cash balance is ${groupConfig.vaultBalance} Kenya Shillings. All members savings is ${totalSavingsCommitted} Shillings.`;
+                  speakPhrase?.(phrase, swahiliMode);
+                }}
+                className="px-5 py-3 bg-white text-emerald-800 hover:bg-emerald-50 active:scale-95 font-black text-xs uppercase rounded-2xl tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-md"
+              >
+                <Volume2 className="w-5 h-5 shrink-0 animate-pulse text-emerald-600" />
+                <span>{swahiliMode ? 'Sikiliza Hali ya Chama Hapa' : 'Listen to Group Summary'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Zero-Text Quick-Touch Visual Symbols */}
+        <div className="bg-white border-2 border-slate-200 p-6 rounded-3xl shadow-sm space-y-4">
+          <div>
+            <span className="bg-indigo-100 text-indigo-800 text-[9px] uppercase font-mono px-2 py-0.5 rounded-md font-bold">
+              {swahiliMode ? 'GUSA PICHA KUFUATA HUDUMA' : 'TAP SYMBOLS FOR QUICK CHAMA ACTIONS'}
+            </span>
+            <h3 className="text-lg font-black text-slate-900 mt-1">
+              {swahiliMode ? 'Msaada wa Picha (Color-Symbol Guide)' : 'Zero-Text Action Metaphors'}
+            </h3>
+            <p className="text-xs text-slate-500 font-semibold">
+              {swahiliMode 
+                ? 'Wanachama wasiojua kusoma wanaweza kubofya picha hizi kusikia salio au kuanza huduma moja kwa moja.' 
+                : 'Illiterate or elderly members can tap these icons to visually verify actions and hear explanations.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
+            {/* 1. Green Arrow into Traditional Kiondo Basket */}
+            <div 
+              onClick={() => {
+                const phrase = swahiliMode 
+                  ? "Kiondo cha Akiba. Hapa ni mahali pa kuweka amana na kutoa michango ya kikundi. Mshale wa kijani unaonyesha kuingiza akiba ndani ya kikapu cha chama cha wanyororo au kuweka akiba ya kawaida."
+                  : "Savings Basket. This represents adding money into our traditional Chama pot. The green arrow points inside to show your contribution going in.";
+                speakPhrase?.(phrase, swahiliMode);
+              }}
+              className="group bg-emerald-50/70 hover:bg-emerald-100/90 border-2 border-emerald-400 p-5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer transform hover:-translate-y-1 shadow-sm"
+            >
+              {/* Basket SVG */}
+              <div className="w-24 h-24 relative flex items-center justify-center bg-white rounded-full shadow-inner p-2 border border-emerald-100">
+                {/* Green Arrow pointing into pot */}
+                <div className="absolute top-1 animate-bounce z-10">
+                  <svg className="w-8 h-8 text-emerald-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11 4h2v10h3l-4 4-4-4h3z" />
+                  </svg>
+                </div>
+                {/* Woven Kiondo basket */}
+                <svg className="w-16 h-16 text-[#b48348]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+                  <path d="M20,40 C20,80 80,80 80,40" strokeWidth="6" strokeLinecap="round" />
+                  <path d="M25,43 C25,75 75,75 75,43" strokeWidth="4" />
+                  <path d="M30,46 C30,70 70,70 70,46" strokeWidth="3" />
+                  <path d="M35,46 L35,68" />
+                  <path d="M42,46 L42,70" />
+                  <path d="M50,46 L50,70" />
+                  <path d="M58,46 L58,70" />
+                  <path d="M65,46 L65,68" />
+                  <path d="M15,40 C15,25 30,25 30,40" />
+                  <path d="M85,40 C85,25 70,25 70,40" />
+                </svg>
+              </div>
+              <h4 className="font-extrabold text-emerald-950 text-sm mt-3 uppercase tracking-wider">
+                {swahiliMode ? 'Kiondo cha Akiba' : 'Savings Basket'}
+              </h4>
+              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100/60 px-2 py-0.5 rounded-md mt-1">
+                {swahiliMode ? 'Mshale wa Kijani' : 'Green Arrow IN'}
+              </span>
+            </div>
+
+            {/* 2. Blue Hand handing over cash */}
+            <div 
+              onClick={() => {
+                const phrase = swahiliMode 
+                  ? "Mikopo ya Upendo. Mkono wa bluu ukipokea au kupeana pesa. Gusa hapa kuangalia mikopo yako au kuanzisha maombi mapya ya mkopo ya dharura."
+                  : "Loan Application. The blue hand represents lending and assistance. Tap here to request capital for your retail store or emergency bills.";
+                speakPhrase?.(phrase, swahiliMode);
+              }}
+              className="group bg-blue-50/70 hover:bg-blue-100/90 border-2 border-blue-400 p-5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer transform hover:-translate-y-1 shadow-sm"
+            >
+              {/* Blue Hand SVG */}
+              <div className="w-24 h-24 relative flex items-center justify-center bg-white rounded-full shadow-inner p-2 border border-blue-100">
+                <div className="absolute top-1 text-emerald-600 animate-pulse text-xs font-black font-mono">
+                  Ksh
+                </div>
+                <svg className="w-16 h-16 text-blue-600" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+                  <rect x="35" y="20" width="36" height="18" rx="2" fill="#d1fae5" stroke="#059669" strokeWidth="2" transform="rotate(-10 50 30)" />
+                  <path d="M20,60 C30,60 40,65 50,65 C60,65 75,55 85,55 C90,55 92,60 88,65 C80,72 65,80 50,80 L20,80 Z" strokeWidth="5" strokeLinecap="round" fill="#eff6ff" />
+                  <path d="M25,55 C30,45 42,50 42,60" strokeWidth="4" />
+                </svg>
+              </div>
+              <h4 className="font-extrabold text-blue-950 text-sm mt-3 uppercase tracking-wider">
+                {swahiliMode ? 'Mkono wa Mikopo' : 'Loan Application'}
+              </h4>
+              <span className="text-[10px] text-blue-700 font-bold bg-blue-100/60 px-2 py-0.5 rounded-md mt-1">
+                {swahiliMode ? 'Mkono wa Bluu' : 'Blue Hand OUT'}
+              </span>
+            </div>
+
+            {/* 3. Red Warning Clock/Shield */}
+            <div 
+              onClick={() => {
+                const phrase = swahiliMode 
+                  ? "Tahadhari ya Faini. Ngao nyekundu na saa. Inakuonya kuhusu mikopo ambayo imechelewa kulipwa au faini ya mikutano iliyokosa ili kulinda chama chako."
+                  : "Overdue Penalties & Meeting Fines. The red shield warning clock alerts you about overdue dates or outstanding penalties to prevent credit score drop.";
+                speakPhrase?.(phrase, swahiliMode);
+              }}
+              className="group bg-rose-50/70 hover:bg-rose-100/90 border-2 border-rose-400 p-5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer transform hover:-translate-y-1 shadow-sm"
+            >
+              {/* Red warning shield/clock SVG */}
+              <div className="w-24 h-24 relative flex items-center justify-center bg-white rounded-full shadow-inner p-2 border border-rose-100">
+                <svg className="w-16 h-16 text-rose-600" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+                  <path d="M25,25 L50,15 L75,25 C75,50 65,75 50,85 C35,75 25,50 25,25 Z" strokeWidth="5" strokeLinejoin="round" fill="#fff5f5" />
+                  <circle cx="50" cy="45" r="14" stroke="#e11d48" strokeWidth="2" />
+                  <path d="M50,45 L50,38" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M50,45 L58,45" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M50,72 L50,68" stroke="#e11d48" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h4 className="font-extrabold text-rose-950 text-sm mt-3 uppercase tracking-wider">
+                {swahiliMode ? 'Tahadhari ya Faini' : 'Overdue Warning'}
+              </h4>
+              <span className="text-[10px] text-rose-700 font-bold bg-rose-100/60 px-2 py-0.5 rounded-md mt-1">
+                {swahiliMode ? 'Saa na Ngao Nyekundu' : 'Red Clock & Shield'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Gigantic Simplified Accessibility Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card 1: Vault Cash Reserves */}
+          <div 
+            onClick={() => {
+              const text = swahiliMode 
+                ? `Kiasi cha pesa zilizomo kwenye sanduku hivi sasa kwa ajili ya kukopesha wanachama ni Shilingi ${groupConfig.vaultBalance}.` 
+                : `The cash balance currently inside the group box is ${groupConfig.vaultBalance} Kenya Shillings, ready to be given as loans.`;
+              speakPhrase?.(text, swahiliMode);
+            }}
+            className="bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-300 p-6 rounded-3xl transition duration-150 cursor-pointer shadow-md flex flex-col justify-between min-h-[160px]"
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <span className="text-emerald-805 font-extrabold text-xs uppercase tracking-widest bg-emerald-100 px-2.5 py-1 rounded-lg">
+                  {swahiliMode ? '🏦 PESA KIKOPONI (VAULT)' : '🏦 POOLED BANK CASH (VAULT)'}
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-emerald-950 mt-4 tracking-tight">
+                  {formatKsh(groupConfig.vaultBalance)}
+                </h2>
+              </div>
+              <div className="bg-emerald-600 text-white rounded-2xl p-4 shadow-md shrink-0">
+                <Wallet className="w-8 h-8" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs sm:text-sm text-emerald-800 font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-ping shrink-0" />
+              <span>
+                {swahiliMode 
+                  ? 'Bofya hapa kusikia maelezo ya pesa kikoponi' 
+                  : 'Click anywhere on this card to listen to this balance'}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 2: Cumulative Member Savings */}
+          <div 
+            onClick={() => {
+              const text = swahiliMode 
+                ? `Jumla ya akiba zote ambazo sisi sote wanachama tumeweka pamoja ni Shilingi ${totalSavingsCommitted}.` 
+                : `The total savings put together by all of us members is ${totalSavingsCommitted} Kenya Shillings.`;
+              speakPhrase?.(text, swahiliMode);
+            }}
+            className="bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-300 p-6 rounded-3xl transition duration-150 cursor-pointer shadow-md flex flex-col justify-between min-h-[160px]"
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <span className="text-indigo-805 font-extrabold text-xs uppercase tracking-widest bg-indigo-100 px-2.5 py-1 rounded-lg">
+                  {swahiliMode ? '🌸 AKIBA ZA WANACHAMA' : '🌸 MEMBERS COOPERATIVE SAVINGS'}
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-indigo-950 mt-4 tracking-tight">
+                  {formatKsh(totalSavingsCommitted)}
+                </h2>
+              </div>
+              <div className="bg-indigo-600 text-white rounded-2xl p-4 shadow-md shrink-0">
+                <Banknote className="w-8 h-8" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs sm:text-sm text-indigo-800 font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping shrink-0" />
+              <span>
+                {swahiliMode 
+                  ? 'Bofya hapa kusikia maelezo ya akiba zote' 
+                  : 'Click anywhere on this card to listen to savings balance'}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Shares Equity Capital */}
+          <div 
+            onClick={() => {
+              const text = swahiliMode 
+                ? `Thamani ya hisa zote ambazo wanachama wamejinunulia hivi sasa ni Shilingi ${totalSharesValue}.` 
+                : `The total value of shares bought by members in this group is ${totalSharesValue} Kenya Shillings.`;
+              speakPhrase?.(text, swahiliMode);
+            }}
+            className="bg-blue-50 hover:bg-blue-100 border-2 border-blue-300 p-6 rounded-3xl transition duration-150 cursor-pointer shadow-md flex flex-col justify-between min-h-[160px]"
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <span className="text-blue-805 font-extrabold text-xs uppercase tracking-widest bg-blue-100 px-2.5 py-1 rounded-lg">
+                  {swahiliMode ? '📈 HISA ZA CHAMA' : '📈 TOTAL GROUP SHARES'}
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-blue-950 mt-4 tracking-tight">
+                  {formatKsh(totalSharesValue)}
+                </h2>
+              </div>
+              <div className="bg-blue-600 text-white rounded-2xl p-4 shadow-md shrink-0">
+                <Users className="w-8 h-8" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs sm:text-sm text-blue-800 font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping shrink-0" />
+              <span>
+                {swahiliMode 
+                  ? 'Bofya hapa kusikia maelezo ya hisa zako' 
+                  : 'Click anywhere on this card to listen to share values'}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Outstanding Credit Portfolio */}
+          <div 
+            onClick={() => {
+              const text = swahiliMode 
+                ? `Jumla ya mikopo ya sasa iliyotolewa kwa wanachama kukuza biashara na mashamba yao ni Shilingi ${totalActiveLoansPrincipal}.` 
+                : `Total active loans given out to members to support their farms and businesses is ${totalActiveLoansPrincipal} Kenya Shillings.`;
+              speakPhrase?.(text, swahiliMode);
+            }}
+            className="bg-rose-50 hover:bg-rose-100 border-2 border-rose-300 p-6 rounded-3xl transition duration-150 cursor-pointer shadow-md flex flex-col justify-between min-h-[160px]"
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <span className="text-rose-805 font-extrabold text-xs uppercase tracking-widest bg-rose-100 px-2.5 py-1 rounded-lg">
+                  {swahiliMode ? '💰 MIKOPO ILIYO NJE' : '💰 ACTIVE OUTSTANDING LOANS'}
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-rose-950 mt-4 tracking-tight">
+                  {formatKsh(totalActiveLoansPrincipal)}
+                </h2>
+              </div>
+              <div className="bg-rose-600 text-white rounded-2xl p-4 shadow-md shrink-0">
+                <Activity className="w-8 h-8" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs sm:text-sm text-rose-800 font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping shrink-0" />
+              <span>
+                {swahiliMode 
+                  ? 'Bofya hapa kusikia maelezo ya mikopo yote' 
+                  : 'Click anywhere on this card to listen to active loan book'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Very Simple Graphical/Text Guide on how to interact */}
+        <div className="bg-white border-2 border-slate-250 p-6 sm:p-8 rounded-3xl space-y-6 shadow-sm">
+          <div>
+            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+              <span className="p-1.5 bg-amber-500 text-black text-xs font-black rounded-lg">GUIDE</span>
+              {swahiliMode ? 'Mwongozo Mwepesi wa Kazi Kuu za Chama' : 'Simple Guide for Core Chama Functions'}
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">
+              {swahiliMode 
+                ? 'Je unataka kuweka akiba au kuomba mkopo? Fuata maagizo haya mepesi chini.' 
+                : 'Do you want to deposit money or apply for a loan? Follow these easy steps below.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <div className="p-5 bg-emerald-50/50 border border-emerald-150 rounded-2xl space-y-3">
+              <h4 className="font-extrabold text-emerald-900 text-sm sm:text-base flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center">1</span>
+                {swahiliMode ? 'Jinsi ya Kuweka Akiba (Deposit)' : 'How to Add Savings (Deposit)'}
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                {swahiliMode 
+                  ? 'Kuweka akiba ni rahisi! Bofya "Sandbox Simulator: Visible" iliyo juu ili uone simu ya mkononi upande wa kulia. Kisha bofya "M-Pesa App", andika kiasi unachotaka, na weka nambari yako ya PIN ya siri.' 
+                  : 'Adding savings is easy! Toggle "Sandbox Simulator: Visible" at the top to see the mobile handset on the right. Then tap "M-Pesa App", type your amount, and enter your secret PIN to complete payment.'}
+              </p>
+              <button
+                onClick={() => {
+                  const p = swahiliMode 
+                    ? "Ili kuweka akiba, angalia simu iliyo upande wa kulia. Chagua neno M-Pesa App. Andika kiasi cha pesa mfano Shilingi elfu moja, kisha bofya tuma. Mfumo utakutaka uweke PIN ya simu yako kukamilisha kwa usalama kabisa."
+                    : "To add savings, look at the phone on the right. Tap M-Pesa App. Choose saving, enter an amount like 1000, and click send. Enter your pin on the screen to finalize.";
+                  speakPhrase?.(p, swahiliMode);
+                }}
+                className="text-[11px] font-extrabold text-emerald-700 underline flex items-center gap-1 cursor-pointer"
+              >
+                <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+                <span>{swahiliMode ? 'Sikiliza Maagizo ya Akiba' : 'Listen to Savings Guide'}</span>
+              </button>
+            </div>
+
+            <div className="p-5 bg-indigo-50/50 border border-indigo-150 rounded-2xl space-y-3">
+              <h4 className="font-extrabold text-indigo-900 text-sm sm:text-base flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center">2</span>
+                {swahiliMode ? 'Jinsi ya Kuomba Mkopo (Borrow)' : 'How to Request a Loan (Borrow)'}
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                {swahiliMode 
+                  ? 'Kupata mkopo ni haraka na hakuna makaratasi! Unaweza kuomba hadi mara tatu ya akiba yako ya sasa. Piga kodi ya nyota tatu nane nne, reli kwenye simu ya mkononi kulia kuanza maombi.' 
+                  : 'Getting a loan is paperless and instant! You can borrow up to 3x your total savings. Dial star three eight four star five five hash on the simulated phone on the right to start.'}
+              </p>
+              <button
+                onClick={() => {
+                  const p = swahiliMode 
+                    ? "Ili kuomba mkopo mpya, piga simu ukitumia kodi ya nyota tatu nane nne, reli upande wa kulia. Chagua nambari ya tatu yaani Kuomba Mkopo. Andika kiasi unachotaka na muda wa kulipa kisha ubonyeze tuma."
+                    : "To borrow a loan, dial star three eight four, hash on the simulator phone to the right. Choose option three for Loan. Type your amount, then click submit to register your request instantly.";
+                  speakPhrase?.(p, swahiliMode);
+                }}
+                className="text-[11px] font-extrabold text-indigo-700 underline flex items-center gap-1 cursor-pointer"
+              >
+                <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+                <span>{swahiliMode ? 'Sikiliza Maagizo ya Mikopo' : 'Listen to Borrowing Guide'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Rotation Time Machine inside Easy View */}
+        <div className="bg-amber-500/10 border-2 border-amber-300 p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h4 className="font-black text-amber-950 text-base flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-amber-600 shrink-0" />
+              {swahiliMode ? 'Mzunguko wa Sasa wa Kikundi' : 'Current Chama Cycle Date'}
+            </h4>
+            <p className="text-xs font-mono font-bold text-amber-900">
+              {swahiliMode ? `Leo ni tarehe: ${currentSimDate}` : `Current simulation date: ${currentSimDate}`}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                onFastForwardTime();
+                const text = swahiliMode 
+                  ? "Muda umesogezwa mbele kwa mwezi mmoja. Karibu kwenye mzunguko mpya." 
+                  : "Time fast-forwarded by one month. Welcome to the next cycle.";
+                speakPhrase?.(text, swahiliMode);
+              }}
+              className="px-5 py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-xs text-black font-black uppercase rounded-2xl tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-md"
+            >
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>{swahiliMode ? 'Sogeza Mbele +Mwezi 1' : 'Fast Forward +1 Month'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -751,132 +1130,6 @@ export default function DashboardStats({
         )}
       </div>
 
-      {/* Audit Log / Transaction Ledger */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 border-b border-slate-800 pb-4">
-          <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <FileSpreadsheet className="text-emerald-400 w-4 h-4" />
-              Chama Paybill & Bank Transaction History
-            </h3>
-            <p className="text-[11px] text-neutral-400">Immutable ledger synchronized instantly when members pay via M-Pesa. Eliminates paper books error or bad audits.</p>
-          </div>
-
-          {/* Ledger filters & Search */}
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            <div className="relative flex-1 sm:flex-initial">
-              <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-neutral-500" />
-              <input
-                type="text"
-                placeholder="Search reference Name/MPESA..."
-                value={searchTx}
-                onChange={(e) => setSearchTx(e.target.value)}
-                className="bg-black border border-slate-800 text-xs text-white pl-8 pr-3 py-1.5 rounded-lg w-full sm:w-48 focus:outline-none focus:border-emerald-600 font-mono"
-              />
-            </div>
-
-            <div className="flex bg-black border border-slate-800 rounded-lg p-0.5">
-              {(['all', 'savings', 'shares', 'repayment'] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setFilterTx(type)}
-                  className={`px-3 py-1 rounded text-[10px] font-semibold uppercase tracking-wider transition ${
-                    filterTx === type 
-                      ? 'bg-emerald-600 text-black' 
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setIsAuditModalOpen(true)}
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-black font-bold text-[10px] uppercase rounded-lg tracking-wider transition flex items-center gap-1.5 shrink-0"
-              title="Generate printable monthly audit ledger summary sheet"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Audit Report</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Ledger list */}
-        <div className="overflow-x-auto max-h-[280px] overflow-y-auto pr-1">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-slate-800 text-neutral-400 font-semibold font-mono uppercase text-[9px]">
-                <th className="pb-2">Transaction ID / M-Pesa Ref</th>
-                <th className="pb-2 text-neutral-200">Member</th>
-                <th className="pb-2">Asset Type</th>
-                <th className="pb-2">Method</th>
-                <th className="pb-2">Timestamp</th>
-                <th className="pb-2 text-right">Amortized Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {filteredTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-neutral-500 italic">
-                    No transactions match current filters. Direct payment simulator to post a transaction.
-                  </td>
-                </tr>
-              ) : (
-                filteredTransactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-slate-800/30 transition">
-                    <td className="py-2.5 font-mono text-zinc-100 uppercase text-[11px] font-bold">
-                      {tx.reference}
-                      <span className="block text-[8px] text-neutral-500 select-all font-normal">ID: {tx.id}</span>
-                    </td>
-                    <td className="py-2.5 font-bold text-neutral-200">{tx.memberName}</td>
-                    <td className="py-2.5">
-                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                        tx.type === 'savings' 
-                          ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-900/50' 
-                          : tx.type === 'shares'
-                          ? 'bg-blue-950/80 text-blue-400 border border-blue-900/50'
-                          : 'bg-amber-950/80 text-amber-400 border border-amber-900/50'
-                      }`}>
-                        {tx.type === 'savings' ? 'Savings' : tx.type === 'shares' ? 'Shares Board' : 'Repayment'}
-                      </span>
-                    </td>
-                    <td className="py-2.5 text-neutral-400 capitalize flex items-center gap-1">
-                      {tx.paymentMethod === 'mpesa' ? (
-                        <>
-                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block"></span>
-                          <span>M-Pesa wallet</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
-                          <span>Bank Mobile</span>
-                        </>
-                      )}
-                    </td>
-                    <td className="py-2.5 text-neutral-500 font-mono text-[10px]">{tx.timestamp}</td>
-                    <td className={`py-2.5 text-right font-mono font-bold ${
-                      tx.type === 'repayment' ? 'text-amber-400' : 'text-emerald-400'
-                    }`}>
-                      {tx.type === 'repayment' ? '-' : '+'}{formatKsh(tx.amount)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <MonthlyAuditSummary
-        isOpen={isAuditModalOpen}
-        onClose={() => setIsAuditModalOpen(false)}
-        groupConfig={groupConfig}
-        transactions={transactions}
-        members={members}
-        loans={loans}
-        currentSimDate={currentSimDate}
-      />
     </div>
   );
 }

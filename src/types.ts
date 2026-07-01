@@ -13,6 +13,8 @@ export interface Member {
   lastContributionDate?: string;
   role?: 'chairperson' | 'secretary' | 'treasurer' | 'member';
   status?: 'approved' | 'pending' | 'rejected';
+  animalIcon?: string; // Animal or nature icon identifier for visual/illiterate verification
+  profilePhoto?: string; // Optional custom photo url or local symbol
 }
 
 export type TransactionType = 'savings' | 'shares' | 'repayment';

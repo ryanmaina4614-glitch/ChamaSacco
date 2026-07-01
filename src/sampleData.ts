@@ -30,7 +30,8 @@ export const INITIAL_MEMBERS: Member[] = [
     joinedDate: "2024-01-10",
     lastContributionDate: "2026-05-15",
     role: "chairperson",
-    status: "approved"
+    status: "approved",
+    animalIcon: "🦁 Lion"
   },
   {
     id: "mem_2",
@@ -46,7 +47,8 @@ export const INITIAL_MEMBERS: Member[] = [
     joinedDate: "2024-01-12",
     lastContributionDate: "2026-05-18",
     role: "treasurer",
-    status: "approved"
+    status: "approved",
+    animalIcon: "🐘 Elephant"
   },
   {
     id: "mem_3",
@@ -62,7 +64,8 @@ export const INITIAL_MEMBERS: Member[] = [
     joinedDate: "2024-02-05",
     lastContributionDate: "2026-05-12",
     role: "secretary",
-    status: "approved"
+    status: "approved",
+    animalIcon: "🦒 Giraffe"
   },
   {
     id: "mem_4",
@@ -78,7 +81,8 @@ export const INITIAL_MEMBERS: Member[] = [
     joinedDate: "2024-03-20",
     lastContributionDate: "2026-05-20",
     role: "member",
-    status: "approved"
+    status: "approved",
+    animalIcon: "🦓 Zebra"
   }
 ];
 

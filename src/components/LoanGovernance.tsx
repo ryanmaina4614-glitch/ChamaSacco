@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Member, Loan, GroupConfig } from '../types';
 import { 
   ShieldAlert, 
@@ -35,6 +36,7 @@ interface LoanGovernanceProps {
   onDisburseLoan: (loanId: string) => void;
   onSignGuarantor?: (loanId: string, guarantorMemberId: string) => void;
   currentSimDate: string;
+  elderlyMode?: boolean;
 }
 
 export default function LoanGovernance({
@@ -46,7 +48,8 @@ export default function LoanGovernance({
   onVoteLoan,
   onDisburseLoan,
   onSignGuarantor,
-  currentSimDate
+  currentSimDate,
+  elderlyMode = true
 }: LoanGovernanceProps) {
   const baseInterestRate = 5; // 5% per cycle (monthly)
 
@@ -275,185 +278,272 @@ export default function LoanGovernance({
             <p className="text-[11px] text-slate-500 mt-0.5">Enter details to generate your digital approval schedule. Borrow limit is capped relative to your saved capital indicators.</p>
           </div>
 
-          <form onSubmit={handleApply} className="space-y-4 text-xs">
-            
-            {/* Applicant trust status */}
-            <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex justify-between items-center">
-              <div>
-                <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">APPLICANT SIGNATURE</span>
-                <span className="font-extrabold text-slate-800 text-xs">{activeMember.name}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">COLLATERAL CEILING (3x)</span>
-                <span className="font-extrabold text-emerald-700 font-mono text-xs block">
-                  {formatKsh(activeMember.totalSavings * 3)}
-                </span>
-              </div>
-            </div>
-
-            {/* Principal value Selector */}
-            <div className="space-y-1.5">
-              <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide">Principal Currency Level (Ksh)</label>
-              <div className="relative">
-                <span className="absolute left-3 top-3 font-mono text-slate-400 font-bold">Ksh</span>
-                <input
-                  type="number"
-                  value={applyAmount}
-                  onChange={(e) => handleAmountChange(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-3 pl-11 text-slate-800 w-full text-xs font-mono font-extrabold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
-                  placeholder="e.g. 10000"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Sliders or Dropdowns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Amortization Period</label>
-                <select
-                  value={applyDuration}
-                  onChange={(e) => setApplyDuration(parseInt(e.target.value))}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
-                >
-                  <option value={1}>1 Month Duration</option>
-                  <option value={2}>2 Months Duration</option>
-                  <option value={3}>3 Months Duration</option>
-                  <option value={6}>6 Months Duration</option>
-                  <option value={12}>12 Months Duration</option>
-                </select>
+          {elderlyMode ? (
+            /* Quick Apply Mode: Reduced to exactly 3 large, high-contrast input fields */
+            <form onSubmit={handleApply} className="space-y-6 text-sm bg-amber-500/10 p-5 rounded-2xl border-2 border-amber-500/30 text-left">
+              <div className="bg-amber-400/20 p-3 rounded-xl border border-amber-500/30 flex items-center gap-2 mb-2">
+                <span className="text-xl shrink-0">👴👵</span>
+                <div>
+                  <h4 className="font-extrabold text-slate-900 uppercase tracking-wide text-xs">Quick Apply Mode (Easy Setting Active)</h4>
+                  <p className="text-[11px] text-slate-700 font-semibold">Reduced to 3 simple choices. Other complex variables configured automatically.</p>
+                </div>
               </div>
 
-              <div>
-                <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Interest Formula</label>
-                <select
-                  value={applyInterestType}
-                  onChange={(e) => setApplyInterestType(e.target.value as any)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
-                >
-                  <option value="flat">Flat Interest Rate (5% / mo)</option>
-                  <option value="reducing">Reducing Balance Rate (5% / mo)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Installment Cycle Track</label>
-                <select
-                  value={applyInstallmentTrack}
-                  onChange={(e) => setApplyInstallmentTrack(e.target.value as any)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
-                >
-                  <option value="monthly">Monthly Repayments</option>
-                  <option value="bi-weekly">Bi-weekly Cycles (Fortnightly)</option>
-                  <option value="weekly">Weekly Cycles (Every 7 Days)</option>
-                </select>
+              {/* Field 1: Large Amount (Ksh) */}
+              <div className="space-y-1.5">
+                <label className="text-slate-800 font-black block text-sm uppercase tracking-wider">
+                  1. How much money do you need? (Ksh)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-3.5 font-sans font-black text-slate-500 text-lg">Ksh</span>
+                  <input
+                    type="number"
+                    value={applyAmount}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                    className="bg-white border-2 border-slate-300 rounded-2xl p-4 pl-14 text-slate-900 w-full text-lg font-black focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition shadow-sm"
+                    placeholder="e.g. 10000"
+                    required
+                  />
+                </div>
+                <div className="flex justify-between items-center text-xs mt-1">
+                  <span className="text-slate-500 font-bold">Your Borrowing Limit:</span>
+                  <span className="text-emerald-700 font-black">{formatKsh(activeMember.totalSavings * 3)}</span>
+                </div>
               </div>
 
-              <div>
-                <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Purpose Statement</label>
+              {/* Field 2: Large Purpose Box */}
+              <div className="space-y-1.5">
+                <label className="text-slate-800 font-black block text-sm uppercase tracking-wider">
+                  2. What will you use the money for? (Purpose)
+                </label>
                 <input
                   type="text"
                   value={applyPurpose}
                   onChange={(e) => setApplyPurpose(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
-                  placeholder="e.g. Cattle purchase"
+                  className="bg-white border-2 border-slate-300 rounded-2xl p-4 text-slate-900 w-full text-base font-bold focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition shadow-sm"
+                  placeholder="e.g. Farm seeds, kiosk goods, cow feed, family medical bills"
                   required
                 />
               </div>
-            </div>
 
-            {/* Guarantor pooling input and list */}
-            <div className="space-y-2 border-t border-slate-100 pt-4">
-              <span className="text-[10px] text-indigo-700 uppercase tracking-widest font-extrabold block">Community Guarantor Pledges (Trust Matrix)</span>
-              <p className="text-[11px] text-slate-500">Chama security convention: request co-members to back this application using their private savings as a buffer.</p>
-              
-              <div className="flex flex-col sm:flex-row gap-2">
+              {/* Field 3: Large Duration (Dropdown) */}
+              <div className="space-y-1.5">
+                <label className="text-slate-800 font-black block text-sm uppercase tracking-wider">
+                  3. How many months to pay back? (Duration)
+                </label>
                 <select
-                  value={tempGuarantorId}
-                  onChange={(e) => setTempGuarantorId(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 text-[11px] focus:outline-none w-full sm:w-1/2 font-bold focus:bg-white transition"
+                  value={applyDuration}
+                  onChange={(e) => setApplyDuration(parseInt(e.target.value))}
+                  className="bg-white border-2 border-slate-300 rounded-2xl p-4 text-slate-900 w-full text-base font-black focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition shadow-sm cursor-pointer"
                 >
-                  <option value="">-- Choose Guarantor --</option>
-                  {members.filter(m => m.id !== activeMember.id).map(m => (
-                    <option key={m.id} value={m.id}>{m.name} ({formatKsh(m.totalSavings)} Savings)</option>
-                  ))}
+                  <option value={1}>1 Month (Pay back quickly)</option>
+                  <option value={2}>2 Months (Medium timeframe)</option>
+                  <option value={3}>3 Months (Standard timeframe)</option>
+                  <option value={6}>6 Months (Longer timeframe)</option>
+                  <option value={12}>12 Months (Extended timeframe)</option>
                 </select>
-                <div className="flex gap-1.5 w-full sm:w-1/2">
-                  <input
-                    type="number"
-                    placeholder="Pledge (Ksh)"
-                    value={tempPledgeAmount}
-                    onChange={(e) => setTempPledgeAmount(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 text-[11px] w-full font-mono font-bold focus:outline-none focus:bg-white transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!tempGuarantorId) return;
-                      const gMember = members.find(m => m.id === tempGuarantorId);
-                      if (!gMember) return;
-                      const amt = Number(tempPledgeAmount);
-                      if (isNaN(amt) || amt <= 0) {
-                        alert("Please specify a valid pledge amount.");
-                        return;
-                      }
-                      if (amt > gMember.totalSavings) {
-                        alert(`Action Denied! Pledge of Ksh ${amt.toLocaleString()} exceeds this guarantor's actual active savings pool of ${formatKsh(gMember.totalSavings)}.`);
-                        return;
-                      }
-                      if (pledges.some(p => p.memberId === tempGuarantorId)) {
-                        alert("This guarantor is already staged for this loan.");
-                        return;
-                      }
-                      setPledges(prev => [...prev, { memberId: gMember.id, memberName: gMember.name, amountPledged: amt }]);
-                      setTempGuarantorId('');
-                      setTempPledgeAmount('');
-                    }}
-                    className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-155 rounded-xl px-4 text-[11px] transition font-extrabold shrink-0 cursor-pointer"
-                  >
-                    Add
-                  </button>
-                </div>
               </div>
 
-              {pledges.length > 0 && (
-                <div className="space-y-1.5 mt-2 bg-indigo-50/40 p-3 rounded-xl border border-indigo-100 text-[11px]">
-                  <span className="text-[10px] text-indigo-800 font-extrabold block mb-1 uppercase tracking-tight">Active Staged Guarantor Commitments:</span>
-                  {pledges.map((p, pIdx) => (
-                    <div key={pIdx} className="flex justify-between items-center text-slate-750 font-medium">
-                      <span>👤 {p.memberName}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] text-indigo-650 font-extrabold">{formatKsh(p.amountPledged)}</span>
-                        <button
-                          type="button"
-                          onClick={() => setPledges(prev => prev.filter((_, i) => i !== pIdx))}
-                          className="text-red-500 hover:text-red-700 font-bold px-1.5 bg-slate-200/50 hover:bg-slate-200/80 rounded transition cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+              {applyError && (
+                <div className="bg-rose-100 p-4 rounded-xl border-2 border-rose-300 text-rose-950 flex items-start gap-2 leading-relaxed">
+                  <ShieldAlert className="w-5 h-5 shrink-0 text-rose-600" />
+                  <span className="text-xs font-bold">{applyError}</span>
                 </div>
               )}
-            </div>
 
-            {applyError && (
-              <div className="bg-rose-50 p-3.5 rounded-xl border border-rose-200/80 text-rose-800 flex items-start gap-2 leading-relaxed">
-                <ShieldAlert className="w-4.5 h-4.5 shrink-0 text-rose-500" />
-                <span className="text-[11px] font-medium">{applyError}</span>
+              {/* Dynamic Tactile Feedback Submit Button */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black py-4 rounded-2xl transition text-sm shadow-md cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider active:bg-emerald-700"
+              >
+                <span>🚀 Apply For Loan Now</span>
+              </motion.button>
+            </form>
+          ) : (
+            /* Original full application form for detailed governance settings */
+            <form onSubmit={handleApply} className="space-y-4 text-xs">
+              
+              {/* Applicant trust status */}
+              <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex justify-between items-center">
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">APPLICANT SIGNATURE</span>
+                  <span className="font-extrabold text-slate-800 text-xs">{activeMember.name}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">COLLATERAL CEILING (3x)</span>
+                  <span className="font-extrabold text-emerald-700 font-mono text-xs block">
+                    {formatKsh(activeMember.totalSavings * 3)}
+                  </span>
+                </div>
               </div>
-            )}
 
-            <button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md cursor-pointer hover:shadow-lg hover:shadow-emerald-500/10 active:scale-[0.99] tracking-wider"
-            >
-              Submit Signed Loan Request for Board Review
-            </button>
-          </form>
+              {/* Principal value Selector */}
+              <div className="space-y-1.5">
+                <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide">Principal Currency Level (Ksh)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 font-mono text-slate-400 font-bold">Ksh</span>
+                  <input
+                    type="number"
+                    value={applyAmount}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 pl-11 text-slate-800 w-full text-xs font-mono font-extrabold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
+                    placeholder="e.g. 10000"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Sliders or Dropdowns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Amortization Period</label>
+                  <select
+                    value={applyDuration}
+                    onChange={(e) => setApplyDuration(parseInt(e.target.value))}
+                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
+                  >
+                    <option value={1}>1 Month Duration</option>
+                    <option value={2}>2 Months Duration</option>
+                    <option value={3}>3 Months Duration</option>
+                    <option value={6}>6 Months Duration</option>
+                    <option value={12}>12 Months Duration</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Interest Formula</label>
+                  <select
+                    value={applyInterestType}
+                    onChange={(e) => setApplyInterestType(e.target.value as any)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
+                  >
+                    <option value="flat">Flat Interest Rate (5% / mo)</option>
+                    <option value="reducing">Reducing Balance Rate (5% / mo)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Installment Cycle Track</label>
+                  <select
+                    value={applyInstallmentTrack}
+                    onChange={(e) => setApplyInstallmentTrack(e.target.value as any)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
+                  >
+                    <option value="monthly">Monthly Repayments</option>
+                    <option value="bi-weekly">Bi-weekly Cycles (Fortnightly)</option>
+                    <option value="weekly">Weekly Cycles (Every 7 Days)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 block text-[11px] font-extrabold uppercase tracking-wide mb-1.5">Purpose Statement</label>
+                  <input
+                    type="text"
+                    value={applyPurpose}
+                    onChange={(e) => setApplyPurpose(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 w-full text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:bg-white transition"
+                    placeholder="e.g. Cattle purchase"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Guarantor pooling input and list */}
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                <span className="text-[10px] text-indigo-700 uppercase tracking-widest font-extrabold block">Community Guarantor Pledges (Trust Matrix)</span>
+                <p className="text-[11px] text-slate-500">Chama security convention: request co-members to back this application using their private savings as a buffer.</p>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={tempGuarantorId}
+                    onChange={(e) => setTempGuarantorId(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 text-[11px] focus:outline-none w-full sm:w-1/2 font-bold focus:bg-white transition"
+                  >
+                    <option value="">-- Choose Guarantor --</option>
+                    {members.filter(m => m.id !== activeMember.id).map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({formatKsh(m.totalSavings)} Savings)</option>
+                    ))}
+                  </select>
+                  <div className="flex gap-1.5 w-full sm:w-1/2">
+                    <input
+                      type="number"
+                      placeholder="Pledge (Ksh)"
+                      value={tempPledgeAmount}
+                      onChange={(e) => setTempPledgeAmount(e.target.value)}
+                      className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 text-[11px] w-full font-mono font-bold focus:outline-none focus:bg-white transition"
+                    />
+                    <motion.button
+                      whileTap={{ scale: 0.90 }}
+                      type="button"
+                      onClick={() => {
+                        if (!tempGuarantorId) return;
+                        const gMember = members.find(m => m.id === tempGuarantorId);
+                        if (!gMember) return;
+                        const amt = Number(tempPledgeAmount);
+                        if (isNaN(amt) || amt <= 0) {
+                          alert("Please specify a valid pledge amount.");
+                          return;
+                        }
+                        if (amt > gMember.totalSavings) {
+                          alert(`Action Denied! Pledge of Ksh ${amt.toLocaleString()} exceeds this guarantor's actual active savings pool of ${formatKsh(gMember.totalSavings)}.`);
+                          return;
+                        }
+                        if (pledges.some(p => p.memberId === tempGuarantorId)) {
+                          alert("This guarantor is already staged for this loan.");
+                          return;
+                        }
+                        setPledges(prev => [...prev, { memberId: gMember.id, memberName: gMember.name, amountPledged: amt }]);
+                        setTempGuarantorId('');
+                        setTempPledgeAmount('');
+                      }}
+                      className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-155 rounded-xl px-4 text-[11px] transition font-extrabold shrink-0 cursor-pointer"
+                    >
+                      Add
+                    </motion.button>
+                  </div>
+                </div>
+
+                {pledges.length > 0 && (
+                  <div className="space-y-1.5 mt-2 bg-indigo-50/40 p-3 rounded-xl border border-indigo-100 text-[11px]">
+                    <span className="text-[10px] text-indigo-800 font-extrabold block mb-1 uppercase tracking-tight">Active Staged Guarantor Commitments:</span>
+                    {pledges.map((p, pIdx) => (
+                      <div key={pIdx} className="flex justify-between items-center text-slate-750 font-medium">
+                        <span>👤 {p.memberName}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] text-indigo-650 font-extrabold">{formatKsh(p.amountPledged)}</span>
+                          <button
+                            type="button"
+                            onClick={() => setPledges(prev => prev.filter((_, i) => i !== pIdx))}
+                            className="text-red-500 hover:text-red-700 font-bold px-1.5 bg-slate-200/50 hover:bg-slate-200/80 rounded transition cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {applyError && (
+                <div className="bg-rose-50 p-3.5 rounded-xl border border-rose-200/80 text-rose-800 flex items-start gap-2 leading-relaxed">
+                  <ShieldAlert className="w-4.5 h-4.5 shrink-0 text-rose-500" />
+                  <span className="text-[11px] font-medium">{applyError}</span>
+                </div>
+              )}
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md cursor-pointer hover:shadow-lg hover:shadow-emerald-500/10 tracking-wider"
+              >
+                Submit Signed Loan Request for Board Review
+              </motion.button>
+            </form>
+          )}
         </div>
 
 
@@ -671,11 +761,11 @@ export default function LoanGovernance({
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-extrabold text-slate-800 text-sm">{loan.memberName}</span>
-                        <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-lg font-mono font-extrabold uppercase">
-                          Awaiting Sign-offs
+                        <span className="text-[10px] bg-amber-400 text-slate-950 border-2 border-amber-600 px-2.5 py-1 rounded-md font-sans font-black uppercase tracking-wide shadow-xs">
+                          Awaiting Sign-offs ⌛
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                      <p className="text-[11px] text-slate-505 mt-1.5 leading-relaxed">
                         Principal requested: <strong className="text-slate-800">{formatKsh(loan.amountApplied)}</strong> • Formula: <span className="text-slate-700 uppercase font-extrabold font-mono text-[10px]">{loan.interestType}</span> • Frequency: <span className="text-indigo-600 font-extrabold uppercase text-[9px]">{loan.installmentTrack}</span>
                         <br />
                         <span className="italic text-slate-550 font-medium">Applied for: "{loan.purpose}"</span>
@@ -727,8 +817,8 @@ export default function LoanGovernance({
                                 </span>
                                 
                                 {vote ? (
-                                  <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                                    vote === 'approve' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
+                                  <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border-2 ${
+                                    vote === 'approve' ? 'bg-emerald-600 text-white border-emerald-800' : 'bg-rose-600 text-white border-rose-800'
                                   }`}>
                                     {vote === 'approve' ? 'Approved ✓' : 'Denied ✗'}
                                   </span>
@@ -756,7 +846,8 @@ export default function LoanGovernance({
                                     className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded focus:border-indigo-500 focus:outline-none text-slate-800"
                                   />
                                   <div className="flex gap-2">
-                                    <button
+                                    <motion.button
+                                      whileTap={{ scale: 0.95 }}
                                       type="button"
                                       onClick={() => {
                                         const el = document.getElementById(`reason-input-${loan.id}-${cm.id}`) as HTMLInputElement;
@@ -767,11 +858,12 @@ export default function LoanGovernance({
                                         }
                                         onVoteLoan(loan.id, cm.id, 'approve', cm.name, rText.trim());
                                       }}
-                                      className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold text-[10px] uppercase rounded transition"
+                                      className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-black text-[10px] uppercase rounded-lg transition tracking-wide cursor-pointer"
                                     >
                                       Approve
-                                    </button>
-                                    <button
+                                    </motion.button>
+                                    <motion.button
+                                      whileTap={{ scale: 0.95 }}
                                       type="button"
                                       onClick={() => {
                                         const el = document.getElementById(`reason-input-${loan.id}-${cm.id}`) as HTMLInputElement;
@@ -782,10 +874,10 @@ export default function LoanGovernance({
                                         }
                                         onVoteLoan(loan.id, cm.id, 'reject', cm.name, rText.trim());
                                       }}
-                                      className="flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-[10px] uppercase rounded transition"
+                                      className="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white font-black text-[10px] uppercase rounded-lg transition tracking-wide cursor-pointer"
                                     >
                                       Deny
-                                    </button>
+                                    </motion.button>
                                   </div>
                                 </div>
                               ) : (
@@ -802,17 +894,18 @@ export default function LoanGovernance({
                     {/* Disbursement mechanism trigger */}
                     <div className="flex justify-end pt-2 border-t border-slate-150/50">
                       {isDisbursable ? (
-                        <button
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
                           type="button"
                           onClick={() => {
                             onDisburseLoan(loan.id);
                             alert("Safaricom M-Pesa automated transaction successfully completed! Principal cash disbursed to client.");
                           }}
-                          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-black font-extrabold py-2.5 px-5 rounded-xl border border-emerald-500 shadow-sm transition text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-black font-extrabold py-2.5 px-5 rounded-xl border-2 border-emerald-500 shadow-sm transition text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <CheckCircle className="w-4.5 h-4.5 shrink-0" />
                           Simulate M-Pesa Disbursement
-                        </button>
+                        </motion.button>
                       ) : (
                         <div className="w-full bg-slate-100 border border-slate-200 p-2.5 rounded-xl text-slate-500 text-[11px] flex gap-2 items-start leading-tight">
                           <XCircle className="w-4.5 h-4.5 text-amber-500 shrink-0" />
@@ -955,11 +1048,19 @@ export default function LoanGovernance({
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-extrabold text-slate-850 text-sm">{loan.memberName}</span>
-                        <span className={`text-[9px] uppercase px-2 py-0.5 rounded-lg border font-mono font-bold ${badgeBg}`}>
-                          {loan.status === 'repaid' ? 'Fully Paid ✓' : isOverdue ? 'LATE / IN OVERDUE' : isNearingDeadline ? 'WARNING: DUE SOON' : 'IN COMPLIANCE / ACTIVE'}
+                        <span className={`text-[10px] uppercase px-2.5 py-1 rounded-md font-sans font-black tracking-wide border-2 shadow-xs ${
+                          loan.status === 'repaid'
+                            ? 'bg-emerald-600 text-white border-emerald-800'
+                            : isOverdue
+                            ? 'bg-red-600 text-white border-red-800 animate-pulse'
+                            : isNearingDeadline
+                            ? 'bg-amber-400 text-slate-950 border-amber-600'
+                            : 'bg-emerald-400 text-slate-950 border-emerald-600'
+                        }`}>
+                          {loan.status === 'repaid' ? 'Fully Paid ✓' : isOverdue ? 'LATE / IN OVERDUE ⚠️' : isNearingDeadline ? 'WARNING: DUE SOON ⌛' : 'ACTIVE / IN COMPLIANCE ✓'}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1 leading-normal font-medium">
+                      <p className="text-[11px] text-slate-505 mt-1 leading-normal font-medium">
                         Disbursed Principal: <strong className="text-slate-800">{formatKsh(loan.principal)}</strong> • Interest Type: <span className="uppercase font-mono text-[9px] font-bold text-slate-600">{loan.interestType}</span> • Schedule Track: <span className="uppercase font-mono text-[9px] text-indigo-650 font-semibold">{loan.installmentTrack}</span>
                       </p>
                     </div>
@@ -983,10 +1084,10 @@ export default function LoanGovernance({
                     </div>
 
                     {/* Progress slider bar representation */}
-                    <div className="w-full h-1.5 rounded-full overflow-hidden bg-slate-200 flex">
+                    <div className="w-full h-3 rounded-full overflow-hidden bg-slate-200 border border-slate-300 flex">
                       <div 
                         style={{ width: `${Math.min(100, (totalRepaidOnLoan / totalObligation) * 100)}%` }}
-                        className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                        className="bg-emerald-600 h-full rounded-full transition-all duration-300"
                       />
                     </div>
 

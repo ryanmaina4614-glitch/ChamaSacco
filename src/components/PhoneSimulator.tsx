@@ -11,6 +11,9 @@ interface PhoneSimulatorProps {
   onApplyLoanUSSD: (amount: number, duration: number, purpose: string) => void;
   onRepayLoanUSSD: (loanId: string, amount: number) => void;
   activeMemberLoans: any[];
+  elderlyMode?: boolean;
+  swahiliMode?: boolean;
+  speakPhrase?: (text: string, isSwahili: boolean) => void;
 }
 
 export default function PhoneSimulator({
@@ -21,7 +24,10 @@ export default function PhoneSimulator({
   onAddTransaction,
   onApplyLoanUSSD,
   onRepayLoanUSSD,
-  activeMemberLoans
+  activeMemberLoans,
+  elderlyMode = false,
+  swahiliMode = false,
+  speakPhrase
 }: PhoneSimulatorProps) {
   // Mobile UI tabs: 'ussd' | 'sms' | 'mpesa'
   const [phoneTab, setPhoneTab] = useState<'ussd' | 'sms' | 'mpesa'>('ussd');
@@ -56,6 +62,11 @@ export default function PhoneSimulator({
     if (ussdDialCode === '*384*55#') {
       setUssdSession({ state: 'welcome' });
       setUssdLogs([`Dialing ${ussdDialCode} on Safaricom Network...`, 'Session established with Upendo Chama Server.']);
+      
+      const welcomePhrase = swahiliMode 
+        ? "Karibu kwenye huduma ya simu ya Upendo. Chagua moja kuangalia salio na hisa, mbili kuweka akiba, au tatu kuomba mkopo mpya." 
+        : "Welcome to Upendo USSD session. Press 1 to check balance and shares, 2 to deposit savings, or 3 to apply for a loan.";
+      speakPhrase?.(welcomePhrase, swahiliMode);
     } else {
       setUssdLogs([`Dialing ${ussdDialCode}...`, 'Connection problem or invalid MMI code.']);
     }
@@ -69,15 +80,35 @@ export default function PhoneSimulator({
     if (ussdSession.state === 'welcome') {
       if (cleaned === '1') {
         setUssdSession({ state: 'checking_balance' });
+        const balancePhrase = swahiliMode 
+          ? `Akiba yako ya sasa ni Shilingi ${activeMember.totalSavings}. Thamani ya hisa zako ni Shilingi ${activeMember.shareBalance}. Mikopo yako ya sasa ni Shilingi ${activeMember.activeLoans}.` 
+          : `Your savings balance is ${activeMember.totalSavings} Shillings. Your share balance value is ${activeMember.shareBalance} Shillings. Your outstanding loan balance is ${activeMember.activeLoans} Shillings.`;
+        speakPhrase?.(balancePhrase, swahiliMode);
       } else if (cleaned === '2') {
         setUssdSession({ state: 'deposit_select' });
+        const depPhrase = swahiliMode 
+          ? "Chagua moja kuweka akiba ya kawaida, au mbili kununua hisa za Chama." 
+          : "Press 1 to deposit into regular savings or 2 to buy group shares.";
+        speakPhrase?.(depPhrase, swahiliMode);
       } else if (cleaned === '3') {
         setUssdSession({ state: 'loan_apply' });
+        const loanPhrase = swahiliMode 
+          ? `Kikomo chako cha mkopo ni Shilingi ${activeMember.totalSavings * 3}. Tafadhali andika kiasi cha mkopo unachotaka kuomba.` 
+          : `Your maximum borrowing limit is ${activeMember.totalSavings * 3} Shillings. Please type the loan amount you want to borrow.`;
+        speakPhrase?.(loanPhrase, swahiliMode);
       } else if (cleaned === '4') {
         setUssdSession({ state: 'repay_loan_select' });
+        const repayPhrase = swahiliMode 
+          ? "Tafadhali chagua nambari ya mkopo unaotaka kulipa kwenye orodha." 
+          : "Please select the loan index you want to repay from the list.";
+        speakPhrase?.(repayPhrase, swahiliMode);
       } else if (cleaned === '5') {
         setUssdSession({ state: 'idle' }); // Just quick view
-        alert(`Your current micro-credit score profile is ${activeMember.creditScore} (Excellent). Limit is based on up to 3x your total savings!`);
+        const scorePhrase = swahiliMode 
+          ? `Kiwango chako cha mkopo ni kizuri sana chenye alama ${activeMember.creditScore}. Kikomo chako cha mkopo ni mara tatu ya akiba yako yote.` 
+          : `Your current credit profile score is ${activeMember.creditScore}, which is excellent. Limit is based on up to three times your total savings.`;
+        speakPhrase?.(scorePhrase, swahiliMode);
+        alert(scorePhrase);
       } else {
         // Stay and log invalid
         setUssdLogs(prev => [...prev, 'Invalid option. Choose 1 - 5.']);
@@ -90,9 +121,17 @@ export default function PhoneSimulator({
       if (cleaned === '1') {
         setUssdSession({ state: 'deposit_amount', tempAmount: 0 }); // Savings
         setMpesaType('savings');
+        const amtPhrase = swahiliMode 
+          ? "Andika kiasi cha shilingi unachotaka kuweka akiba." 
+          : "Please enter the amount of shillings you want to add to your savings.";
+        speakPhrase?.(amtPhrase, swahiliMode);
       } else if (cleaned === '2') {
         setUssdSession({ state: 'deposit_amount', tempAmount: 0 }); // Shares
         setMpesaType('shares');
+        const amtPhrase = swahiliMode 
+          ? "Andika kiasi cha shilingi unachotaka kununulia hisa." 
+          : "Please enter the amount of shillings you want to spend buying shares.";
+        speakPhrase?.(amtPhrase, swahiliMode);
       } else {
         setUssdSession({ state: 'welcome' });
       }
@@ -380,35 +419,42 @@ export default function PhoneSimulator({
                     {/* USSD Dynamic Text Outputs */}
                     {ussdSession.state === 'welcome' && (
                       <div className="space-y-1">
-                        <p className="font-bold text-amber-200">Welcome to Upendo Unity Chama Ledger:</p>
-                        <p>1. Check My Balance & Shares</p>
-                        <p>2. Save / Deposit Money</p>
-                        <p>3. Apply Chama Microloan</p>
-                        <p>4. Pay Outstanding Repayment</p>
-                        <p>5. Check Credit Rating & Limit</p>
+                        <p className="font-bold text-amber-200">
+                          {swahiliMode ? 'Karibu kwenye Akiba ya Upendo:' : 'Welcome to Upendo Unity Chama Ledger:'}
+                        </p>
+                        <p>1. {swahiliMode ? 'Angalia Salio na Hisa' : 'Check My Balance & Shares'}</p>
+                        <p>2. {swahiliMode ? 'Weka Akiba / Nunua Hisa' : 'Save / Deposit Money'}</p>
+                        <p>3. {swahiliMode ? 'Omba Mkopo wa Chama' : 'Apply Chama Microloan'}</p>
+                        <p>4. {swahiliMode ? 'Lipa Mkopo wako' : 'Pay Outstanding Repayment'}</p>
+                        <p>5. {swahiliMode ? 'Kiwango/Kikomo cha Mkopo' : 'Check Credit Rating & Limit'}</p>
                         <div className="pt-2 border-t border-neutral-900 mt-2 grid grid-cols-5 gap-1">
-                          <button onClick={() => quickOptionClick('1')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center">1</button>
-                          <button onClick={() => quickOptionClick('2')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center">2</button>
-                          <button onClick={() => quickOptionClick('3')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center">3</button>
-                          <button onClick={() => quickOptionClick('4')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center">4</button>
-                          <button onClick={() => quickOptionClick('5')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center">5</button>
+                          <button onClick={() => quickOptionClick('1')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center font-bold">1</button>
+                          <button onClick={() => quickOptionClick('2')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center font-bold">2</button>
+                          <button onClick={() => quickOptionClick('3')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center font-bold">3</button>
+                          <button onClick={() => quickOptionClick('4')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center font-bold">4</button>
+                          <button onClick={() => quickOptionClick('5')} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 px-1.5 rounded text-[10px] text-center font-bold">5</button>
                         </div>
                       </div>
                     )}
 
                     {ussdSession.state === 'checking_balance' && (
                       <div className="space-y-1 text-[11px]">
-                        <p className="font-bold text-emerald-400">Your Chama Ledger Record:</p>
-                        <p>• Total Savings: Ksh {activeMember.totalSavings.toLocaleString()}</p>
-                        <p>• Shares Purchased: {activeMember.shareBalance / 500} Shares (Valued at Ksh {activeMember.shareBalance.toLocaleString()})</p>
-                        <p>• Outstanding Loan: Ksh {activeMember.activeLoans.toLocaleString()}</p>
-                        <p>• Paybill Target: Ksh {groupConfig.targetContribution.toLocaleString()}/mo</p>
+                        <p className="font-bold text-emerald-400">
+                          {swahiliMode ? 'Kumbukumbu zako za Chama:' : 'Your Chama Ledger Record:'}
+                        </p>
+                        <p>• {swahiliMode ? 'Jumla ya Akiba:' : 'Total Savings:'} Ksh {activeMember.totalSavings.toLocaleString()}</p>
+                        <p>• {swahiliMode ? 'Hisa zilizonunuliwa:' : 'Shares Purchased:'} {activeMember.shareBalance / 500} {swahiliMode ? 'Hisa' : 'Shares'} ({swahiliMode ? 'Thamani yake:' : 'Valued at:'} Ksh {activeMember.shareBalance.toLocaleString()})</p>
+                        <p>• {swahiliMode ? 'Deni la Mkopo:' : 'Outstanding Loan:'} Ksh {activeMember.activeLoans.toLocaleString()}</p>
+                        <p>• {swahiliMode ? 'Malengo ya mwezi:' : 'Paybill Target:'} Ksh {groupConfig.targetContribution.toLocaleString()}/mo</p>
                         <div className="pt-2">
                           <button 
-                            onClick={() => setUssdSession({ state: 'welcome' })}
+                            onClick={() => {
+                              setUssdSession({ state: 'welcome' });
+                              speakPhrase?.(swahiliMode ? "Umerudi kwenye orodha kuu." : "Returned to main menu.", swahiliMode);
+                            }}
                             className="text-amber-500 font-bold hover:underline"
                           >
-                            0. Back
+                            0. {swahiliMode ? 'Rudi Nyuma' : 'Back'}
                           </button>
                         </div>
                       </div>
@@ -416,20 +462,24 @@ export default function PhoneSimulator({
 
                     {ussdSession.state === 'deposit_select' && (
                       <div className="space-y-1">
-                        <p className="font-bold text-amber-200">Select deposit asset ledger:</p>
-                        <p>1. Savings Vault Portfolio</p>
-                        <p>2. Buy Chama Equity Shares</p>
-                        <p>0. Back to Main</p>
+                        <p className="font-bold text-amber-200">
+                          {swahiliMode ? 'Chagua njia ya akiba:' : 'Select deposit asset ledger:'}
+                        </p>
+                        <p>1. {swahiliMode ? 'Akiba ya Kawaida' : 'Savings Vault Portfolio'}</p>
+                        <p>2. {swahiliMode ? 'Nunua Hisa Mpya za Chama' : 'Buy Chama Equity Shares'}</p>
+                        <p>0. {swahiliMode ? 'Rudi Nyuma' : 'Back to Main'}</p>
                         <div className="pt-2 border-t border-neutral-900 mt-2 flex gap-2">
-                          <button onClick={() => quickOptionClick('1')} className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 rounded text-center">1 (Savings)</button>
-                          <button onClick={() => quickOptionClick('2')} className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 rounded text-center">2 (Shares)</button>
+                          <button onClick={() => quickOptionClick('1')} className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 rounded text-center text-[10px]">1 ({swahiliMode ? 'Akiba' : 'Savings'})</button>
+                          <button onClick={() => quickOptionClick('2')} className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 rounded text-center text-[10px]">2 ({swahiliMode ? 'Hisa' : 'Shares'})</button>
                         </div>
                       </div>
                     )}
 
                     {ussdSession.state === 'deposit_amount' && (
                       <div className="space-y-1">
-                        <p className="font-bold text-amber-200">Enter payment amount (Ksh) to send via simulated STK Push trigger:</p>
+                        <p className="font-bold text-amber-200">
+                          {swahiliMode ? 'Ingiza kiasi (Ksh) kutuma kupitia M-Pesa:' : 'Enter payment amount (Ksh) to send via simulated STK Push trigger:'}
+                        </p>
                         <div className="flex gap-2 pt-1.5">
                           <button onClick={() => setUssdInputText('500')} className="bg-neutral-900 hover:bg-neutral-800 py-0.5 px-2 rounded">500</button>
                           <button onClick={() => setUssdInputText('1000')} className="bg-neutral-900 hover:bg-neutral-800 py-0.5 px-2 rounded">1,000</button>
@@ -441,50 +491,66 @@ export default function PhoneSimulator({
 
                     {ussdSession.state === 'loan_apply' && (
                       <div className="space-y-1">
-                        <p className="font-bold text-rose-300">Apply Instant Micro-credit:</p>
-                        <p>• Max Limit: Ksh {(activeMember.totalSavings * 3).toLocaleString()} (3x of savings)</p>
-                        <p>• Base Rate: 5% flat/period accrued</p>
-                        <p className="text-neutral-400 mt-1">Type loan principal amount in box below (e.g. 5000):</p>
+                        <p className="font-bold text-rose-300">
+                          {swahiliMode ? 'Omba Mkopo wa Papo Hapo:' : 'Apply Instant Micro-credit:'}
+                        </p>
+                        <p>• {swahiliMode ? 'Kikomo cha juu:' : 'Max Limit:'} Ksh {(activeMember.totalSavings * 3).toLocaleString()} ({swahiliMode ? 'mara 3 ya akiba' : '3x of savings'})</p>
+                        <p>• {swahiliMode ? 'Riba:' : 'Base Rate:'} 5% flat</p>
+                        <p className="text-neutral-400 mt-1">
+                          {swahiliMode ? 'Andika kiasi unachotaka kuomba hapa chini (mfano 5000):' : 'Type loan principal amount in box below (e.g. 5000):'}
+                        </p>
                       </div>
                     )}
 
                     {ussdSession.state === 'loan_confirm' && (
                       <div className="space-y-1 font-sans text-xs">
-                        <p className="font-bold text-amber-200 font-mono">Confirm Loan terms:</p>
-                        <p>• Applied Principal: Ksh {ussdSession.tempAmount?.toLocaleString()}</p>
-                        <p>• Interest Cost (5%): Ksh {((ussdSession.tempAmount || 0) * 0.05).toLocaleString()}</p>
-                        <p>• Total Due: Ksh {((ussdSession.tempAmount || 0) * 1.05).toLocaleString()}</p>
-                        <p>• Period: 3 months amortization</p>
-                        <p className="mt-2 font-mono">1. Confirm & Submit to Committee</p>
-                        <p className="font-mono">2. Cancel</p>
+                        <p className="font-bold text-amber-200 font-mono">
+                          {swahiliMode ? 'Thibitisha Masharti ya Mkopo:' : 'Confirm Loan terms:'}
+                        </p>
+                        <p>• {swahiliMode ? 'Kiasi ulichoomba:' : 'Applied Principal:'} Ksh {ussdSession.tempAmount?.toLocaleString()}</p>
+                        <p>• {swahiliMode ? 'Riba (5%):' : 'Interest Cost (5%):'} Ksh {((ussdSession.tempAmount || 0) * 0.05).toLocaleString()}</p>
+                        <p>• {swahiliMode ? 'Jumla ya kulipa:' : 'Total Due:'} Ksh {((ussdSession.tempAmount || 0) * 1.05).toLocaleString()}</p>
+                        <p>• {swahiliMode ? 'Muda:' : 'Period:'} 3 months amortization</p>
+                        <p className="mt-2 font-mono">1. {swahiliMode ? 'Thibitisha na Tuma Ombi' : 'Confirm & Submit to Committee'}</p>
+                        <p className="font-mono">2. {swahiliMode ? 'Ghairi / Futa' : 'Cancel'}</p>
                         <div className="flex gap-2 pt-1 font-mono">
-                          <button onClick={() => quickOptionClick('1')} className="flex-1 bg-emerald-950 text-emerald-400 border border-emerald-900 hover:bg-emerald-900 py-1 rounded text-center">1. Apply</button>
-                          <button onClick={() => quickOptionClick('2')} className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 rounded text-center">2. Cancel</button>
+                          <button onClick={() => quickOptionClick('1')} className="flex-1 bg-emerald-950 text-emerald-400 border border-emerald-900 hover:bg-emerald-900 py-1 rounded text-center">{swahiliMode ? '1. Thibitisha' : '1. Apply'}</button>
+                          <button onClick={() => quickOptionClick('2')} className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 py-1 rounded text-center">{swahiliMode ? '2. Ghairi' : '2. Cancel'}</button>
                         </div>
                       </div>
                     )}
 
                     {ussdSession.state === 'repay_loan_select' && (
                       <div className="space-y-1">
-                        <p className="font-bold text-amber-200">Select Loan to Pay Repayment:</p>
+                        <p className="font-bold text-amber-200">
+                          {swahiliMode ? 'Chagua mkopo wa kulipa sasa:' : 'Select Loan to Pay Repayment:'}
+                        </p>
                         {activeMemberLoans.filter(l => l.status === 'approved' || l.status === 'overdue').length === 0 ? (
-                          <p className="text-neutral-500 italic text-[11px]">No active loans found matching outstanding balances.</p>
+                          <p className="text-neutral-500 italic text-[11px]">
+                            {swahiliMode ? 'Huna mkopo wowote unaotakiwa kulipwa kwa sasa.' : 'No active loans found matching outstanding balances.'}
+                          </p>
                         ) : (
                           activeMemberLoans.filter(l => l.status === 'approved' || l.status === 'overdue').map((loan, idx) => (
                             <p key={loan.id}>{idx + 1}. Ksh {loan.activeLoans.toLocaleString()} ({loan.purpose.substring(0, 15)}...)</p>
                           ))
                         )}
-                        <p className="text-neutral-500 mt-1">Select index option to continue (e.g. 1):</p>
+                        <p className="text-neutral-500 mt-1">
+                          {swahiliMode ? 'Chagua nambari ya mkopo kuendelea (mfano 1):' : 'Select index option to continue (e.g. 1):'}
+                        </p>
                       </div>
                     )}
 
                     {ussdSession.state === 'repay_loan_amount' && (
                       <div className="space-y-1">
-                        <p className="font-bold text-amber-200">Specify repayment amount:</p>
-                        <p>• Outstanding loan level: Ksh {ussdSession.tempAmount?.toLocaleString()}</p>
-                        <p className="text-neutral-400">Type amount below or choose:</p>
+                        <p className="font-bold text-amber-200">
+                          {swahiliMode ? 'Weka kiasi cha kulipa:' : 'Specify repayment amount:'}
+                        </p>
+                        <p>• {swahiliMode ? 'Salio la deni zima:' : 'Outstanding loan level:'} Ksh {ussdSession.tempAmount?.toLocaleString()}</p>
+                        <p className="text-neutral-400">
+                          {swahiliMode ? 'Andika kiasi chini au bofya:' : 'Type amount below or choose:'}
+                        </p>
                         <div className="flex gap-1 pt-1">
-                          <button onClick={() => setUssdInputText((ussdSession.tempAmount || 0).toString())} className="bg-neutral-900 hover:bg-neutral-800 px-1.5 py-0.5 rounded text-[9px]">Full Payment (Ksh {ussdSession.tempAmount})</button>
+                          <button onClick={() => setUssdInputText((ussdSession.tempAmount || 0).toString())} className="bg-neutral-900 hover:bg-neutral-800 px-1.5 py-0.5 rounded text-[9px]">{swahiliMode ? 'Lipa Yote' : 'Full Payment'} (Ksh {ussdSession.tempAmount})</button>
                         </div>
                       </div>
                     )}

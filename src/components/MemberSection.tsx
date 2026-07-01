@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Member, SavingTransaction, GroupConfig } from '../types';
 import { Users, UserPlus, Phone, CreditCard, Sparkles, LogIn, ArrowRight, ShieldCheck, ShieldAlert, Mail } from 'lucide-react';
 
@@ -6,7 +7,7 @@ interface MemberSectionProps {
   members: Member[];
   activeMember: Member;
   onSelectMember: (memberId: string) => void;
-  onAddMember: (name: string, phone: string, email: string, nationalId: string) => void;
+  onAddMember: (name: string, phone: string, email: string, nationalId: string, animalIcon: string) => void;
   transactions: SavingTransaction[];
   groupConfigShareRate: number;
   groupConfig: GroupConfig;
@@ -34,6 +35,7 @@ export default function MemberSection({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [nationalId, setNationalId] = useState('');
+  const [selectedAnimal, setSelectedAnimal] = useState('🦁 Lion');
   const [errorMsg, setErrorMsg] = useState('');
 
   // State filtering & chairperson permission validations
@@ -68,11 +70,12 @@ export default function MemberSection({
       return;
     }
 
-    onAddMember(name.trim(), phone.trim(), email.trim(), nationalId.trim());
+    onAddMember(name.trim(), phone.trim(), email.trim(), nationalId.trim(), selectedAnimal);
     setName('');
     setPhone('');
     setEmail('');
     setNationalId('');
+    setSelectedAnimal('🦁 Lion');
     setShowAddForm(false);
   };
 
@@ -101,13 +104,14 @@ export default function MemberSection({
           <p className="text-xs text-neutral-400">Manage community members, audit their share portfolios, savings ledger levels, and credit limits.</p>
         </div>
 
-        <button
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-black font-bold py-1.5 px-3 rounded-lg text-xs transition inline-flex items-center gap-1.5 shadow-lg shadow-emerald-950/25"
+          className="bg-emerald-600 hover:bg-emerald-700 text-black font-bold py-1.5 px-3 rounded-lg text-xs transition inline-flex items-center gap-1.5 shadow-lg shadow-emerald-950/25 cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           {showAddForm ? 'Close panel' : 'Add New Member'}
-        </button>
+        </motion.button>
       </div>
 
       {/* Member Limit Alert & Settings */}
@@ -195,6 +199,25 @@ export default function MemberSection({
                 className="bg-black border border-slate-800 text-xs text-white p-2 rounded-lg w-full focus:outline-none focus:border-emerald-600"
               />
             </div>
+
+            <div>
+              <label className="text-[10px] text-zinc-400 block mb-1">Visual Animal Identifier</label>
+              <select
+                value={selectedAnimal}
+                onChange={(e) => setSelectedAnimal(e.target.value)}
+                className="bg-black border border-slate-800 text-xs text-white p-2 rounded-lg w-full focus:outline-none focus:border-emerald-600"
+              >
+                <option value="🦁 Lion">🦁 Lion (Simba)</option>
+                <option value="🐘 Elephant">🐘 Elephant (Tembo)</option>
+                <option value="🦒 Giraffe">🦒 Giraffe (Twiga)</option>
+                <option value="🦓 Zebra">🦓 Zebra (Pundamilia)</option>
+                <option value="🐆 Leopard">🐆 Leopard (Chui)</option>
+                <option value="🦏 Rhino">🦏 Rhino (Kifaru)</option>
+                <option value="🐃 Buffalo">🐃 Buffalo (Nyati)</option>
+                <option value="🦛 Hippo">🦛 Hippo (Kiboko)</option>
+                <option value="🐒 Monkey">🐒 Monkey (Kima)</option>
+              </select>
+            </div>
           </div>
 
           {errorMsg && (
@@ -205,16 +228,17 @@ export default function MemberSection({
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="text-neutral-400 hover:text-white text-xs px-3 py-1.5"
+              className="text-neutral-400 hover:text-white text-xs px-3 py-1.5 cursor-pointer"
             >
               Cancel
             </button>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-700 text-black font-semibold text-xs py-1.5 px-4 rounded-lg transition"
+              className="bg-emerald-600 hover:bg-emerald-700 text-black font-semibold text-xs py-1.5 px-4 rounded-lg transition cursor-pointer"
             >
               Confirm Registration
-            </button>
+            </motion.button>
           </div>
         </form>
       )}
@@ -244,18 +268,20 @@ export default function MemberSection({
                 </div>
                 
                 <div className="flex items-center gap-2 self-end sm:self-auto font-mono">
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => onRejectMember?.(m.id)}
-                    className="px-3 py-1 bg-rose-950/85 hover:bg-rose-900 text-rose-450 border border-rose-900 rounded-lg text-[10px] font-bold uppercase transition cursor-pointer"
+                    className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white border-2 border-red-800 rounded-lg text-[10px] font-black uppercase transition cursor-pointer shadow-xs"
                   >
                     Decline
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => onApproveMember?.(m.id)}
-                    className="px-3 py-1 bg-emerald-950/85 hover:bg-emerald-900 text-emerald-450 border border-emerald-900 rounded-lg text-[10px] font-bold uppercase transition cursor-pointer font-extrabold"
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black border-2 border-emerald-800 rounded-lg text-[10px] font-black uppercase transition cursor-pointer shadow-xs"
                   >
                     Approve Entry
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             ))}
@@ -290,106 +316,139 @@ export default function MemberSection({
         <div className="lg:col-span-2 space-y-3">
           {approvedMembers.map((member) => {
             const isSelected = member.id === activeMember.id;
+            const targetCont = groupConfig.targetContribution || 10000;
+            const progressPercent = Math.min(100, Math.round((member.totalSavings / targetCont) * 100));
+
             return (
               <div
                 key={member.id}
                 onClick={() => onSelectMember(member.id)}
-                className={`bg-slate-900 border text-xs p-4 rounded-xl cursor-pointer transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${
+                className={`bg-slate-900 border text-xs p-5 rounded-xl cursor-pointer transition flex flex-col gap-3.5 ${
                   isSelected 
                     ? 'border-emerald-500 bg-slate-800/40 shadow-md shadow-emerald-950/10' 
                     : 'border-slate-800 hover:border-slate-700'
                 }`}
               >
-                {/* Avatar and Basic Details */}
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow ${member.avatarColor}`}>
-                    {member.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-bold text-white text-sm">{member.name}</h4>
-                      {member.role && member.role !== 'member' && (
-                        <span className="bg-indigo-950 text-indigo-400 border border-indigo-900 rounded-full px-2 py-0.5 text-[8px] font-bold uppercase font-mono tracking-wide">
-                          {member.role}
-                        </span>
-                      )}
-                      {isSelected && (
-                        <span className="bg-emerald-950 text-emerald-400 border border-emerald-900 rounded-full px-1.5 py-0.5 text-[8px] font-bold">
-                          Selected SIM
-                        </span>
+                {/* Upper Content Row */}
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+                  {/* Avatar and Basic Details */}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white shadow relative overflow-hidden select-none shrink-0 ${member.avatarColor}`}>
+                      {member.animalIcon ? (
+                        <span className="text-2xl" title={member.animalIcon}>{member.animalIcon.split(' ')[0]}</span>
+                      ) : (
+                        <span className="text-sm font-bold">{member.name.split(' ').map(n => n[0]).join('')}</span>
                       )}
                     </div>
-                    <div className="text-[11px] text-zinc-400 flex items-center gap-2 mt-0.5">
-                      <span className="font-mono">{member.phone}</span>
-                      <span>•</span>
-                      <span>Joined {member.joinedDate}</span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-bold text-white text-sm flex items-center gap-1.5">
+                          <span>{member.name}</span>
+                          {member.animalIcon && (
+                            <span className="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1">
+                              {member.animalIcon}
+                            </span>
+                          )}
+                        </h4>
+                        {member.role && member.role !== 'member' && (
+                          <span className="bg-indigo-950 text-indigo-400 border border-indigo-900 rounded-full px-2 py-0.5 text-[8px] font-bold uppercase font-mono tracking-wide">
+                            {member.role}
+                          </span>
+                        )}
+                        {isSelected && (
+                          <span className="bg-emerald-950 text-emerald-400 border border-emerald-900 rounded-full px-1.5 py-0.5 text-[8px] font-bold">
+                            Selected SIM
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-zinc-400 flex items-center gap-2 mt-0.5">
+                        <span className="font-mono">{member.phone}</span>
+                        <span>•</span>
+                        <span>Joined {member.joinedDate}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Financial Ledger Status */}
-                <div className="grid grid-cols-3 gap-3 md:gap-5 text-left md:text-right w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800/50">
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block uppercase">Savings</span>
-                    <span className="font-bold text-neutral-200 mt-0.5 block font-mono">
-                      Ksh {member.totalSavings.toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block uppercase">Shares</span>
-                    <span className="font-bold text-neutral-200 mt-0.5 block font-mono">
-                      {member.shareBalance / groupConfigShareRate} U
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block uppercase">Active Loans</span>
-                    <span className={`font-bold mt-0.5 block font-mono ${member.activeLoans > 0 ? 'text-rose-400' : 'text-neutral-500'}`}>
-                      {member.activeLoans > 0 ? `Ksh ${member.activeLoans.toLocaleString()}` : 'None'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Switch / Select action Indicator & ROLE PICKER */}
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 justify-end md:justify-start w-full md:w-auto">
-                  
-                  {isChairperson && member.id !== activeMember.id && (
-                    <div className="flex items-center gap-1.5 bg-black/60 border border-slate-800 p-1 px-2 rounded-lg self-stretch sm:self-auto justify-between sm:justify-start text-xs">
-                      <span className="text-[9px] text-zinc-500 uppercase font-mono font-bold">Role:</span>
-                      <select
-                        value={member.role || 'member'}
-                        onChange={(e) => onAssignRole?.(member.id, e.target.value as any)}
-                        className="bg-black text-[10px] text-amber-400 border-none font-bold focus:outline-none focus:ring-0 p-0 px-1 rounded cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <option value="member">Member</option>
-                        <option value="secretary">Secretary</option>
-                        <option value="treasurer">Treasurer</option>
-                        <option value="chairperson">Chairperson</option>
-                      </select>
+                  {/* Financial Ledger Status */}
+                  <div className="grid grid-cols-3 gap-3 md:gap-5 text-left md:text-right w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800/50">
+                    <div>
+                      <span className="text-[10px] text-zinc-400 block uppercase">Savings</span>
+                      <span className="font-bold text-neutral-200 mt-0.5 block font-mono">
+                        Ksh {member.totalSavings.toLocaleString()}
+                      </span>
                     </div>
-                  )}
 
-                  <div className="flex items-center gap-2">
-                    <span className={`border rounded px-1.5 py-0.5 text-[10px] font-mono font-extrabold ${scoreColor(member.creditScore)}`}>
-                      Score: {member.creditScore}
-                    </span>
+                    <div>
+                      <span className="text-[10px] text-zinc-400 block uppercase">Shares</span>
+                      <span className="font-bold text-neutral-200 mt-0.5 block font-mono">
+                        {member.shareBalance / groupConfigShareRate} U
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-zinc-400 block uppercase">Active Loans</span>
+                      <span className={`font-bold mt-0.5 block font-mono ${member.activeLoans > 0 ? 'text-rose-400' : 'text-neutral-500'}`}>
+                        {member.activeLoans > 0 ? `Ksh ${member.activeLoans.toLocaleString()}` : 'None'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Switch / Select action Indicator & ROLE PICKER */}
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 justify-end md:justify-start w-full md:w-auto">
                     
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectMember(member.id);
-                      }}
-                      className={`p-1.5 rounded-lg transition ${
-                        isSelected 
-                          ? 'bg-emerald-900/30 text-emerald-400' 
-                          : 'bg-black text-neutral-400 hover:text-white'
-                      }`}
-                      title="Activate to simulate USSD Operations"
-                    >
-                      <LogIn className="w-3.5 h-3.5" />
-                    </button>
+                    {isChairperson && member.id !== activeMember.id && (
+                      <div className="flex items-center gap-1.5 bg-black/60 border border-slate-800 p-1 px-2 rounded-lg self-stretch sm:self-auto justify-between sm:justify-start text-xs">
+                        <span className="text-[9px] text-zinc-500 uppercase font-mono font-bold">Role:</span>
+                        <select
+                          value={member.role || 'member'}
+                          onChange={(e) => onAssignRole?.(member.id, e.target.value as any)}
+                          className="bg-black text-[10px] text-amber-400 border-none font-bold focus:outline-none focus:ring-0 p-0 px-1 rounded cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="member">Member</option>
+                          <option value="secretary">Secretary</option>
+                          <option value="treasurer">Treasurer</option>
+                          <option value="chairperson">Chairperson</option>
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <span className={`border rounded px-1.5 py-0.5 text-[10px] font-mono font-extrabold ${scoreColor(member.creditScore)}`}>
+                        Score: {member.creditScore}
+                      </span>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectMember(member.id);
+                        }}
+                        className={`p-1.5 rounded-lg transition ${
+                          isSelected 
+                            ? 'bg-emerald-900/30 text-emerald-400' 
+                            : 'bg-black text-neutral-400 hover:text-white'
+                        }`}
+                        title="Activate to simulate USSD Operations"
+                      >
+                        <LogIn className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Full-width High-contrast Savings Target Progress Bar */}
+                <div className="w-full pt-3 border-t border-slate-800/60">
+                  <div className="flex justify-between items-center text-[10.5px] mb-1.5 font-bold">
+                    <span className="text-zinc-400 uppercase tracking-wide">Savings Target Progress:</span>
+                    <span className="text-emerald-400 font-extrabold font-mono">
+                      {progressPercent}% (Ksh {member.totalSavings.toLocaleString()} / Ksh {targetCont.toLocaleString()})
+                    </span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-black border border-slate-800 overflow-hidden flex shadow-inner">
+                    <div 
+                      style={{ width: `${progressPercent}%` }}
+                      className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                    />
                   </div>
                 </div>
 
@@ -404,7 +463,7 @@ export default function MemberSection({
                 {rejectedMembers.map(m => (
                   <div key={m.id} className="flex justify-between items-center text-xs text-neutral-400 bg-black/25 border border-slate-900 px-3 py-1.5 rounded-lg font-mono">
                     <span>❌ {m.name} ({m.phone})</span>
-                    <span className="text-[9px] uppercase px-1.5 bg-rose-950 text-rose-400 border border-rose-900 rounded font-bold">Declined</span>
+                    <span className="text-[10px] uppercase px-2.5 py-1 bg-red-600 text-white border-2 border-red-800 rounded-md font-sans font-black tracking-wide shadow-xs">Declined ✗</span>
                   </div>
                 ))}
               </div>

@@ -9,6 +9,7 @@ import {
 } from './sampleData';
 
 import DashboardStats from './components/DashboardStats';
+import TransactionsLedger from './components/TransactionsLedger';
 import MemberSection from './components/MemberSection';
 import LoanGovernance from './components/LoanGovernance';
 import PhoneSimulator from './components/PhoneSimulator';
@@ -23,6 +24,9 @@ import {
   BadgePercent, 
   Smartphone,
   Info,
+  Volume2,
+  Languages,
+  Eye,
   CloudLightning,
   LogOut,
   Building2,
@@ -161,6 +165,35 @@ export default function App() {
   
   // Selected Member phone simulation target
   const [activeMemberId, setActiveMemberId] = useState<string>("mem_1");
+
+  // Elderly & Easy Mode and Language/Translate switcher with local storage persistence
+  const [elderlyMode, setElderlyMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('elderly_mode');
+    return saved === null ? true : saved === 'true';
+  });
+  const [swahiliMode, setSwahiliMode] = useState<boolean>(() => {
+    return localStorage.getItem('swahili_mode') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('elderly_mode', String(elderlyMode));
+  }, [elderlyMode]);
+
+  useEffect(() => {
+    localStorage.setItem('swahili_mode', String(swahiliMode));
+  }, [swahiliMode]);
+
+  // Speech Synthesis helper for illiterate/elderly audio read-out assist
+  const speakPhrase = (text: string, isSwahili: boolean) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel(); // Stop current speaking to avoid overlap
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = isSwahili ? 'sw-KE' : 'en-US';
+      utterance.rate = 0.82; // Slightly slowed down for easy comprehension
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   // Global theme switcher ('light' | 'dark')
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -1444,6 +1477,76 @@ export default function App() {
         </div>
       </header>
 
+      {/* Elderly and Illiterate Easy Access Assist Bar */}
+      <div className="bg-gradient-to-r from-amber-500/10 to-emerald-500/10 border-b border-amber-200/50 py-2.5 px-4 text-xs font-semibold">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="bg-amber-100 text-amber-800 text-[10px] uppercase font-mono px-2 py-0.5 rounded-md font-bold">
+              Easy Assist • Msaada
+            </span>
+            <span className="text-slate-700 text-xs font-medium">
+              {swahiliMode ? 'Je, unahitaji msaada kusoma au kutumia? Bofya hapa:' : 'Need help reading or navigating? Click to switch:'}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Swahili Translation Switcher */}
+            <button
+              onClick={() => {
+                const newMode = !swahiliMode;
+                setSwahiliMode(newMode);
+                const phrase = newMode 
+                  ? "Sasa unaweza kutumia mfumo huu kwa lugha ya Kiswahili rahisi." 
+                  : "Now using simplified English voice assistant.";
+                speakPhrase(phrase, newMode);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold transition-all text-xs cursor-pointer ${
+                swahiliMode 
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' 
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Languages className="w-4 h-4 shrink-0" />
+              <span>{swahiliMode ? 'Lugha: KISWAHILI' : 'Language: SWAHILI'}</span>
+            </button>
+
+            {/* Easy / Large Text View for Elderly */}
+            <button
+              onClick={() => {
+                const newMode = !elderlyMode;
+                setElderlyMode(newMode);
+                const phrase = newMode 
+                  ? (swahiliMode ? "Muonekano rahisi umewashwa. Maandishi sasa ni makubwa na mepesi kuelewa." : "Easy view activated. Text is now larger and simpler to read.")
+                  : (swahiliMode ? "Muonekano wa kawaida umerudishwa." : "Standard view restored.");
+                speakPhrase(phrase, swahiliMode);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold transition-all text-xs cursor-pointer ${
+                elderlyMode 
+                  ? 'bg-amber-500 text-white border-amber-500 shadow-sm' 
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Eye className="w-4 h-4 shrink-0" />
+              <span>{swahiliMode ? 'Maandishi Makubwa & Rahisi' : 'Easy Mode (Large Text)'}</span>
+            </button>
+
+            {/* Voice Read Aloud assistant */}
+            <button
+              onClick={() => {
+                const phrase = swahiliMode 
+                  ? `Hujambo! Karibu kwenye Biashara Boost. Group yako inaitwa ${groupConfig.groupName}. Unaweza kuweka akiba au kuomba mkopo kwa urahisi hapa chini.` 
+                  : `Hello! Welcome to Biashara Boost. Your group is ${groupConfig.groupName}. You can save, buy shares, or borrow easily below. Click any green button to start.`;
+                speakPhrase(phrase, swahiliMode);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all text-xs cursor-pointer shadow-sm"
+            >
+              <Volume2 className="w-4 h-4 shrink-0 animate-bounce" />
+              <span>{swahiliMode ? 'Sema Nasi (Sauti)' : 'Listen (Speak Aloud)'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Container consisting of Left Sidebar + Content Area */}
       <div className="flex-grow flex relative">
         
@@ -1462,6 +1565,7 @@ export default function App() {
                   { id: 'contributions', label: 'Member Contributions', icon: Coins },
                   { id: 'loans', label: 'Loan Management', icon: Scale },
                   { id: 'bank', label: 'Bank Management', icon: Building2 },
+                  { id: 'transactions', label: 'Transaction History', icon: Receipt },
                 ].map(item => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id || (item.id === 'contributions' && activeTab === 'members');
@@ -1596,6 +1700,19 @@ export default function App() {
                   onFastForwardTime={handleFastForwardTime}
                   onResetDatabase={handleResetDatabase}
                   onUpdateGroupConfig={setGroupConfig}
+                  elderlyMode={elderlyMode}
+                  swahiliMode={swahiliMode}
+                  speakPhrase={speakPhrase}
+                />
+              )}
+
+              {activeTab === 'transactions' && (
+                <TransactionsLedger
+                  groupConfig={groupConfig}
+                  transactions={transactions}
+                  members={members}
+                  loans={loans}
+                  currentSimDate={currentSimDate}
                 />
               )}
 
@@ -1604,7 +1721,7 @@ export default function App() {
                   members={members}
                   activeMember={currentMember}
                   onSelectMember={handleSelectMember}
-                  onAddMember={(name, phone, email, nationalId) => {
+                  onAddMember={(name, phone, email, nationalId, animalIcon) => {
                     const newMemberId = 'mem_' + (members.length + 1) + '_' + Math.random().toString(36).substring(2, 5);
                     const newMember: Member = {
                       id: newMemberId,
@@ -1612,6 +1729,7 @@ export default function App() {
                       phone,
                       email,
                       nationalId,
+                      animalIcon: animalIcon || '🦁 Lion',
                       avatarColor: [
                         'bg-purple-600', 'bg-rose-600', 'bg-blue-600', 'bg-slate-600', 'bg-pink-600'
                       ][members.length % 5],
@@ -1916,23 +2034,44 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {[
-                      { name: "Kajiado East Land Plot #44", category: "Real Estate", value: 1200000, yield: "+12.4% over 1yr" },
-                      { name: "Kenya Treasury Bond FXD1/2026/10Yr", category: "Government Securities", value: 450000, yield: "14.2% Fixed Coupon" },
-                      { name: "Safaricom PLC Shared Portfolio (15k Units)", category: "Equities", value: 330000, yield: "Dividend Yield Tracked" },
-                    ].map((inv, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 border border-slate-150 rounded-xl hover:border-slate-300 transition">
-                        <div>
-                          <p className="text-xs font-semibold text-slate-800">{inv.name}</p>
-                          <span className="text-[10px] text-slate-400 font-mono">{inv.category}</span>
+                      { name: "Kajiado East Land Plot #44", category: "Real Estate", value: 1200000, target: 1500000, yield: "+12.4% over 1yr" },
+                      { name: "Kenya Treasury Bond FXD1/2026/10Yr", category: "Government Securities", value: 450000, target: 500000, yield: "14.2% Fixed Coupon" },
+                      { name: "Safaricom PLC Shared Portfolio (15k Units)", category: "Equities", value: 330000, target: 600000, yield: "Dividend Yield Tracked" },
+                    ].map((inv, idx) => {
+                      const fundingPercent = Math.min(100, Math.round((inv.value / inv.target) * 100));
+                      return (
+                        <div key={idx} className="p-4 border border-slate-150 rounded-xl hover:border-slate-300 transition space-y-3 bg-slate-50/50">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-xs font-extrabold text-slate-800">{inv.name}</p>
+                              <span className="text-[10px] text-slate-500 font-mono font-medium">{inv.category}</span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-extrabold text-slate-800 font-mono">Ksh {inv.value.toLocaleString()}</p>
+                              <span className="text-[10px] text-emerald-700 font-mono font-black block">{inv.yield}</span>
+                            </div>
+                          </div>
+
+                          {/* High-contrast Progress bar representing funding state */}
+                          <div className="space-y-1.5 pt-1 border-t border-slate-200/50">
+                            <div className="flex justify-between text-[11px] font-extrabold">
+                              <span className="text-slate-700 uppercase tracking-wide">Funding Target Progress:</span>
+                              <span className="text-emerald-700 font-black">
+                                {fundingPercent}% Funded (Ksh {inv.value.toLocaleString()} / Ksh {inv.target.toLocaleString()})
+                              </span>
+                            </div>
+                            <div className="w-full h-3 rounded-full bg-black border-2 border-slate-800 overflow-hidden flex shadow-inner">
+                              <div 
+                                style={{ width: `${fundingPercent}%` }}
+                                className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs font-bold text-slate-800 font-mono">Ksh {inv.value.toLocaleString()}</p>
-                          <span className="text-[10px] text-emerald-600 font-mono font-bold">{inv.yield}</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -2433,6 +2572,9 @@ export default function App() {
                   onApplyLoanUSSD={handleApplyLoanUSSD}
                   onRepayLoanUSSD={handleRepayLoanUSSD}
                   activeMemberLoans={activeMemberLoans}
+                  elderlyMode={elderlyMode}
+                  swahiliMode={swahiliMode}
+                  speakPhrase={speakPhrase}
                 />
               </div>
             )}
